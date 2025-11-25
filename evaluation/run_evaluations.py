@@ -140,6 +140,62 @@ class AgentEvaluator:
         
         return results
     
+    async def evaluate_argument_analyzer(self) -> Dict[str, Any]:
+        """Evaluate Argument Analyzer Agent."""
+        logger.info("📊 Evaluating Argument Analyzer Agent...")
+        
+        agent = ArgumentAnalyzerAgent()
+        evalset = await self.load_evalset(self.evalsets_dir / "argument_analyzer_evalset.json")
+        
+        results = {
+            "agent": "ArgumentAnalyzerAgent",
+            "total_cases": len(evalset["eval_cases"]),
+            "passed": 0,
+            "failed": 0,
+            "details": []
+        }
+        
+        for case in evalset["eval_cases"]:
+            eval_id = case["eval_id"]
+            conversation = case["conversation"][0]
+            
+            user_text = conversation["user_content"]["parts"][0]["text"]
+            expected_response = conversation["final_response"]["parts"][0]["text"]
+            
+            try:
+                result = await agent.analyze_argument(user_text, "TestUser")
+                
+                # Check if fallacy detection matches
+                expected_fallacies_line = [line for line in expected_response.split("\n") if "FALLACIES:" in line.upper()][0]
+                expected_fallacies = expected_fallacies_line.split(":")[1].strip().lower()
+                
+                actual_fallacies = ", ".join(result["fallacies"]) if result["fallacies"] else "none"
+                
+                passed = expected_fallacies == actual_fallacies
+                
+                if passed:
+                    results["passed"] += 1
+                else:
+                    results["failed"] += 1
+                
+                results["details"].append({
+                    "eval_id": eval_id,
+                    "status": "PASS" if passed else "FAIL",
+                    "expected": expected_fallacies,
+                    "actual": actual_fallacies
+                })
+                
+            except Exception as e:
+                logger.error(f"Error evaluating {eval_id}: {e}")
+                results["failed"] += 1
+                results["details"].append({
+                    "eval_id": eval_id,
+                    "status": "ERROR",
+                    "error": str(e)
+                })
+        
+        return results
+    
     async def run_all_evaluations(self) -> Dict[str, Any]:
         """Run all agent evaluations."""
         logger.info("\n🚀 Starting Agent Evaluations\n")
@@ -149,6 +205,7 @@ class AgentEvaluator:
         # Evaluate each agent
         all_results["fact_checker"] = await self.evaluate_fact_checker()
         all_results["devils_advocate"] = await self.evaluate_devils_advocate()
+        all_results["argument_analyzer"] = await self.evaluate_argument_analyzer()
         
         # Summary
         total_passed = sum(r["passed"] for r in all_results.values())

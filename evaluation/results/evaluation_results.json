@@ -1,0 +1,74 @@
+{
+  "fact_checker": {
+    "agent": "FactCheckerAgent",
+    "total_cases": 3,
+    "passed": 3,
+    "failed": 0,
+    "details": [
+      {
+        "eval_id": "fact_check_true_claim",
+        "status": "PASS",
+        "expected": "TRUE",
+        "actual": "TRUE"
+      },
+      {
+        "eval_id": "fact_check_false_claim",
+        "status": "PASS",
+        "expected": "FALSE",
+        "actual": "FALSE"
+      },
+      {
+        "eval_id": "fact_check_complex_claim",
+        "status": "PASS",
+        "expected": "PARTIALLY_TRUE",
+        "actual": "PARTIALLY_TRUE"
+      }
+    ]
+  },
+  "devils_advocate": {
+    "agent": "DevilsAdvocateAgent",
+    "total_cases": 2,
+    "passed": 2,
+    "failed": 0,
+    "details": [
+      {
+        "eval_id": "challenge_assumption",
+        "status": "PASS",
+        "expected": "assumption",
+        "actual": "assumption"
+      },
+      {
+        "eval_id": "challenge_logical_consistency",
+        "status": "PASS",
+        "expected": "logical_consistency",
+        "actual": "logical_consistency"
+      }
+    ]
+  },
+  "argument_analyzer": {
+    "agent": "ArgumentAnalyzerAgent",
+    "total_cases": 2,
+    "passed": 0,
+    "failed": 2,
+    "details": [
+      {
+        "eval_id": "detect_ad_hominem",
+        "status": "FAIL",
+        "expected": "ad_hominem",
+        "actual": "appeal to authority (specifically, an irrelevant authority), ad hominem (implied)"
+      },
+      {
+        "eval_id": "detect_strong_argument",
+        "status": "FAIL",
+        "expected": "none",
+        "actual": "appeal to authority"
+      }
+    ]
+  },
+  "summary": {
+    "total_cases": 7,
+    "passed": 5,
+    "failed": 2,
+    "pass_rate": 0.7142857142857143
+  }
+}

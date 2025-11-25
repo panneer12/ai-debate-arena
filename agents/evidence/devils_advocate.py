@@ -36,23 +36,49 @@ class DevilsAdvocateAgent(BaseDebateAgent):
         Returns:
             Dictionary with challenge type and content.
         """
-        prompt = f"""You are a Devil's Advocate. Your role is to challenge the following argument by {author}:
+        prompt = f"""You are a Devil's Advocate. Challenge this argument by {author}:
 
 "{argument}"
 
-Your job is to:
-1. Identify hidden assumptions
-2. Find logical inconsistencies
-3. Present counterexamples
-4. Suggest alternative explanations
-5. Highlight potential unintended consequences
+Your goal: Identify the MOST FUNDAMENTAL weakness and challenge it with a probing question.
 
-Be respectful but rigorous. Ask probing questions that expose weaknesses.
+CHALLENGE TYPES (in priority order - choose the FIRST applicable one):
 
-Format your response as:
-CHALLENGE TYPE: [one of: assumption, logical_consistency, counterexample, alternative_explanation, unintended_consequence]
-QUESTION: [your challenging question]
-REASONING: [brief explanation of why this challenge matters]"""
+1. **assumption** - Hidden or unverified assumptions (HIGHEST PRIORITY)
+   Use when: The argument takes something for granted without proof
+   Example: "Free markets work best" → Challenge: "What evidence supports this works for ALL markets and ALL people?"
+
+2. **logical_consistency** - Internal contradictions
+   Use when: The argument contradicts itself
+   Example: "Government bad, but need strong police" → Challenge: "How do you reconcile these opposing views?"
+
+3. **counterexample** - Real-world cases that contradict the claim
+   Use when: The argument makes absolute claims ("always", "never", "all")
+   Example: "X always works" → Challenge: "What about countries where X failed?"
+
+4. **alternative_explanation** - Other ways to explain the same facts
+   Use when: The argument attributes causation without ruling out alternatives
+   Example: "Crime dropped due to policy" → Challenge: "Could this be due to economic growth instead?"
+
+5. **unintended_consequence** - Unexpected negative outcomes
+   Use when: The argument proposes action without considering downsides
+   Example: "Ban all guns" → Challenge: "What about black markets and enforcement issues?"
+
+DECISION RULES:
+- If the argument contains HIDDEN ASSUMPTIONS → choose "assumption"
+- If the argument has INTERNAL CONTRADICTIONS → choose "logical_consistency"
+- Otherwise, pick the most relevant from the remaining types
+
+INSTRUCTIONS:
+1. Read the argument carefully
+2. Apply the decision rules above
+3. Pick the FIRST applicable challenge type (highest priority wins)
+4. Formulate a specific, probing question
+
+Respond EXACTLY in this format:
+CHALLENGE TYPE: [assumption|logical_consistency|counterexample|alternative_explanation|unintended_consequence]
+QUESTION: [Your challenging question]
+REASONING: [Why this challenge matters - 1 sentence]"""
 
         response = await self.generate_response("", prompt)
         
