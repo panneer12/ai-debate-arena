@@ -13,13 +13,48 @@ from agents.perspectives.conservative import ConservativeAgent
 from agents.perspectives.progressive import ProgressiveAgent
 
 # Configure logging
+import os
+from datetime import datetime
+
+# Create logs directory
+os.makedirs("logs", exist_ok=True)
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+log_file = f"logs/debate_{timestamp}.log"
+
+# Configure root logger to write to file
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.StreamHandler(sys.stdout)
+        logging.FileHandler(log_file, encoding='utf-8')
     ]
 )
+
+# Configure console output (cleaner)
+console = logging.StreamHandler(sys.stdout)
+console.setLevel(logging.INFO)
+formatter = logging.Formatter('%(message)s') # Just the message for console
+console.setFormatter(formatter)
+
+# Filter out noisy libraries from console
+class NoisyFilter(logging.Filter):
+    def filter(self, record):
+        # Filter out http requests and internal library logs from console
+        return not (
+            record.name.startswith("httpx") or 
+            record.name.startswith("google_genai") or
+            record.name.startswith("httpcore") or
+            record.name.startswith("google.genai")
+        )
+
+console.addFilter(NoisyFilter())
+logging.getLogger('').addHandler(console)
+
+# Explicitly silence library loggers to be safe
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+logging.getLogger("google_genai").setLevel(logging.WARNING)
+logging.getLogger("google.genai").setLevel(logging.WARNING)
 
 async def main():
     parser = argparse.ArgumentParser(description="Run a simple AI debate.")

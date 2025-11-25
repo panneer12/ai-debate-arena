@@ -109,7 +109,7 @@ class ModeratorAgent(BaseDebateAgent):
             # Store and broadcast
             debate_msg = DebateMessage(**message)
             self.history.append(debate_msg)
-            logger.info(f"{agent.name}: {response_text[:100]}...")
+            logger.info(f"{agent.name}: {response_text}")
             
             # Simulate real-time fact checking (async in future)
             if self.fact_checker:

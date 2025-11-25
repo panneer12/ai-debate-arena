@@ -64,9 +64,29 @@ class BaseDebateAgent(abc.ABC):
             )
             
             return response.text
+            
         except Exception as e:
-            logger.error(f"Error generating response for {self.name}: {e}")
-            raise
+            error_msg = str(e)
+            
+            # Handle quota exhausted errors
+            if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
+                logger.warning(f"⚠️ API quota exceeded for {self.name}")
+                return f"[{self.name} - API quota exceeded. Please wait and try again, or upgrade your API plan.]"
+            
+            # Handle network/connectivity errors
+            elif "connection" in error_msg.lower() or "timeout" in error_msg.lower():
+                logger.warning(f"⚠️ Network error for {self.name}: {error_msg}")
+                return f"[{self.name} - Network error. Please check your connection.]"
+            
+            # Handle authentication errors
+            elif "401" in error_msg or "UNAUTHENTICATED" in error_msg:
+                logger.error(f"❌ Invalid API key for {self.name}")
+                return f"[{self.name} - Invalid API key. Please check your GOOGLE_API_KEY in .env file.]"
+            
+            # Handle other errors
+            else:
+                logger.error(f"❌ Unexpected error for {self.name}: {e}")
+                return f"[{self.name} - An unexpected error occurred: {type(e).__name__}]"
 
     @abc.abstractmethod
     async def process_message(self, message: Dict[str, Any]) -> Dict[str, Any]:

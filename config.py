@@ -16,9 +16,9 @@ class Settings(BaseSettings):
     google_search_engine_id: Optional[str] = None
     
     # LLM Configuration
-    llm_model: str = "gemini-2.0-flash-exp"
+    llm_model: str = "gemini-1.5-flash"  # Using stable model
     llm_temperature: float = 0.7
-    llm_max_tokens: int = 2048
+    llm_max_tokens: int = 1024
     
     # Debate Configuration
     max_debate_rounds: int = 5
@@ -27,12 +27,12 @@ class Settings(BaseSettings):
     closing_seconds: int = 90
     
     # Performance
-    agent_timeout_seconds: int = 10
-    fact_check_timeout_seconds: int = 5
+    agent_timeout_seconds: int = 30
+    fact_check_timeout_seconds: int = 10
     
     # Logging
     log_level: str = "INFO"
-    log_format: str = "json"
+    log_format: str = "detailed"
     
     # Server
     port: int = 8080
