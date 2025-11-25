@@ -1,0 +1,79 @@
+{
+    "eval_set_id": "fact_checker_evalset",
+    "name": "Fact Checker Agent Evaluation",
+    "description": "Evaluate fact-checking accuracy, confidence scoring, and search usage",
+    "eval_cases": [
+        {
+            "eval_id": "fact_check_true_claim",
+            "conversation": [
+                {
+                    "invocation_id": "fc-001",
+                    "user_content": {
+                        "parts": [
+                            {
+                                "text": "The Earth rotates around the Sun"
+                            }
+                        ],
+                        "role": "user"
+                    },
+                    "final_response": {
+                        "parts": [
+                            {
+                                "text": "VERDICT: TRUE\nCONFIDENCE: 0.95\nEVIDENCE: This is a well-established scientific fact supported by astronomical observations and physics."
+                            }
+                        ],
+                        "role": "assistant"
+                    }
+                }
+            ]
+        },
+        {
+            "eval_id": "fact_check_false_claim",
+            "conversation": [
+                {
+                    "invocation_id": "fc-002",
+                    "user_content": {
+                        "parts": [
+                            {
+                                "text": "Humans only use 10% of their brains"
+                            }
+                        ],
+                        "role": "user"
+                    },
+                    "final_response": {
+                        "parts": [
+                            {
+                                "text": "VERDICT: FALSE\nCONFIDENCE: 0.9\nEVIDENCE: Neuroscience research shows that humans use virtually all parts of the brain. This is a common myth."
+                            }
+                        ],
+                        "role": "assistant"
+                    }
+                }
+            ]
+        },
+        {
+            "eval_id": "fact_check_complex_claim",
+            "conversation": [
+                {
+                    "invocation_id": "fc-003",
+                    "user_content": {
+                        "parts": [
+                            {
+                                "text": "Universal healthcare reduces overall healthcare costs in most developed nations"
+                            }
+                        ],
+                        "role": "user"
+                    },
+                    "final_response": {
+                        "parts": [
+                            {
+                                "text": "VERDICT: PARTIALLY_TRUE\nCONFIDENCE: 0.7\nEVIDENCE: Research shows mixed results - some countries see cost reductions, while others experience increased costs depending on implementation."
+                            }
+                        ],
+                        "role": "assistant"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,55 @@
+{
+    "eval_set_id": "argument_analyzer_evalset",
+    "name": "Argument Analyzer Agent Evaluation",
+    "description": "Evaluate fallacy detection, logical validity scoring, and evidence quality assessment",
+    "eval_cases": [
+        {
+            "eval_id": "detect_ad_hominem",
+            "conversation": [
+                {
+                    "invocation_id": "aa-001",
+                    "user_content": {
+                        "parts": [
+                            {
+                                "text": "You're wrong about climate change because you're not a scientist"
+                            }
+                        ],
+                        "role": "user"
+                    },
+                    "final_response": {
+                        "parts": [
+                            {
+                                "text": "LOGICAL_VALIDITY: 0.2\nEVIDENCE_QUALITY: 0.1\nFALLACIES: ad_hominem\nSTRENGTHS: None\nWEAKNESSES: Attacks the person rather than addressing the argument"
+                            }
+                        ],
+                        "role": "assistant"
+                    }
+                }
+            ]
+        },
+        {
+            "eval_id": "detect_strong_argument",
+            "conversation": [
+                {
+                    "invocation_id": "aa-002",
+                    "user_content": {
+                        "parts": [
+                            {
+                                "text": "Studies from Harvard and MIT show that renewable energy costs have decreased 90% since 2010, making it economically viable"
+                            }
+                        ],
+                        "role": "user"
+                    },
+                    "final_response": {
+                        "parts": [
+                            {
+                                "text": "LOGICAL_VALIDITY: 0.85\nEVIDENCE_QUALITY: 0.9\nFALLACIES: none\nSTRENGTHS: Well-supported by credible sources, specific data\nWEAKNESSES: Could contextualize economic viability further"
+                            }
+                        ],
+                        "role": "assistant"
+                    }
+                }
+            ]
+        }
+    ]
+}

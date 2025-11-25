@@ -1,0 +1,55 @@
+{
+    "eval_set_id": "devils_advocate_evalset",
+    "name": "Devil's Advocate Agent Evaluation",
+    "description": "Evaluate ability to challenge assumptions and identify logical weaknesses",
+    "eval_cases": [
+        {
+            "eval_id": "challenge_assumption",
+            "conversation": [
+                {
+                    "invocation_id": "da-001",
+                    "user_content": {
+                        "parts": [
+                            {
+                                "text": "Free markets always lead to the best outcomes for everyone"
+                            }
+                        ],
+                        "role": "user"
+                    },
+                    "final_response": {
+                        "parts": [
+                            {
+                                "text": "CHALLENGE TYPE: assumption\nQUESTION: What evidence supports that free markets benefit everyone equally, and how do you account for market failures like monopolies or externalities?\nREASONING: This assumes perfect competition and ignores real-world complexities where markets can fail."
+                            }
+                        ],
+                        "role": "assistant"
+                    }
+                }
+            ]
+        },
+        {
+            "eval_id": "challenge_logical_consistency",
+            "conversation": [
+                {
+                    "invocation_id": "da-002",
+                    "user_content": {
+                        "parts": [
+                            {
+                                "text": "Government intervention is always bad, but we need strong laws to protect property rights"
+                            }
+                        ],
+                        "role": "user"
+                    },
+                    "final_response": {
+                        "parts": [
+                            {
+                                "text": "CHALLENGE TYPE: logical_consistency\nQUESTION: How do you reconcile the position that government intervention is bad while advocating for strong government enforcement of property rights?\nREASONING: These statements appear contradictory - property rights require government intervention."
+                            }
+                        ],
+                        "role": "assistant"
+                    }
+                }
+            ]
+        }
+    ]
+}
