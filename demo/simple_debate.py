@@ -11,6 +11,7 @@ load_dotenv()
 from agents.moderator import ModeratorAgent
 from agents.perspectives.conservative import ConservativeAgent
 from agents.perspectives.progressive import ProgressiveAgent
+from agents.evidence import FactCheckerAgent, DevilsAdvocateAgent
 
 # Configure logging
 import os
@@ -67,23 +68,30 @@ async def main():
     moderator = ModeratorAgent()
     conservative = ConservativeAgent()
     progressive = ProgressiveAgent()
+    fact_checker = FactCheckerAgent()
+    devils_advocate = DevilsAdvocateAgent()
 
     print("👥 Agents Ready:")
     print(f"  - {moderator.name} ({moderator.role})")
     print(f"  - {conservative.name} ({conservative.role})")
     print(f"  - {progressive.name} ({progressive.role})")
+    print(f"  - {fact_checker.name} ({fact_checker.role})")
+    print(f"  - {devils_advocate.name} ({devils_advocate.role})")
     print("\n" + "="*50 + "\n")
 
     try:
-        # Start debate
+        # Start debate with intelligence agents
         result = await moderator.start_debate(
             topic=args.topic,
-            debaters=[conservative, progressive]
+            debaters=[conservative, progressive],
+            fact_checker=fact_checker,
+            devils_advocate=devils_advocate
         )
         
         print("\n" + "="*50)
         print("✅ Debate Complete!")
         print(f"Total Messages: {len(result['history'])}")
+        print(f"\n📝 Full log saved to: {log_file}")
         
     except Exception as e:
         print(f"\n❌ Error during debate: {e}")
