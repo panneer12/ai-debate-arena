@@ -48,27 +48,27 @@
   "argument_analyzer": {
     "agent": "ArgumentAnalyzerAgent",
     "total_cases": 2,
-    "passed": 0,
-    "failed": 2,
+    "passed": 1,
+    "failed": 1,
     "details": [
       {
         "eval_id": "detect_ad_hominem",
         "status": "FAIL",
         "expected": "ad_hominem",
-        "actual": "appeal to authority (specifically, an irrelevant authority), ad hominem (implied)"
+        "actual": "appeal_to_authority"
       },
       {
         "eval_id": "detect_strong_argument",
-        "status": "FAIL",
+        "status": "PASS",
         "expected": "none",
-        "actual": "appeal to authority"
+        "actual": "none"
       }
     ]
   },
   "summary": {
     "total_cases": 7,
-    "passed": 5,
-    "failed": 2,
-    "pass_rate": 0.7142857142857143
+    "passed": 6,
+    "failed": 1,
+    "pass_rate": 0.8571428571428571
   }
 }

@@ -43,17 +43,41 @@ class ArgumentAnalyzerAgent(BaseDebateAgent):
 
 "{argument}"
 
+IMPORTANT DISTINCTION - Legitimate vs Fallacious:
+- Citing experts IN THEIR FIELD is LEGITIMATE (e.g., "Climate scientists say..." about climate)
+- Citing experts OUTSIDE THEIR FIELD is FALLACIOUS (e.g., "A celebrity says..." about medicine)
+- Personal attacks INSTEAD OF addressing argument = ad_hominem FALLACY
+- Simply identifying someone's credentials is NOT a fallacy
+
+COMMON FALLACIES (only list if clearly present):
+1. **ad_hominem** - Attacking the person instead of their argument
+   Example: "You're wrong because you're biased" (attacks person, not argument)
+   
+2. **straw_man** - Misrepresenting someone's argument to make it easier to attack
+   
+3. **false_dichotomy** - Presenting only two options when more exist
+   
+4. **appeal_to_authority** - Citing irrelevant or unqualified authorities
+   NOTE: Citing RELEVANT experts (scientists for science, economists for economy) is VALID, not a fallacy!
+
+5. **hasty_generalization** - Drawing broad conclusions from limited evidence
+
 Evaluate:
 1. **Logical Structure**: Is the reasoning sound? (0.0-1.0)
 2. **Evidence Quality**: Is it well-supported? (0.0-1.0)
-3. **Fallacies**: Identify any logical fallacies present
+3. **Fallacies**: List ONLY THE PRIMARY fallacy if one exists, otherwise "none"
 4. **Strengths**: What makes this argument strong?
 5. **Weaknesses**: What undermines this argument?
+
+DECISION RULES:
+- If the argument cites RELEVANT experts with data → fallacies = "none"
+- If the argument attacks the person INSTEAD of the argument → fallacies = "ad_hominem"
+- Only list the MOST SIGNIFICANT fallacy, not all possible ones
 
 Format your response as:
 LOGICAL_VALIDITY: [0.0-1.0]
 EVIDENCE_QUALITY: [0.0-1.0]
-FALLACIES: [comma-separated list or "none"]
+FALLACIES: [single fallacy name or "none"]
 STRENGTHS: [brief list]
 WEAKNESSES: [brief list]"""
 
