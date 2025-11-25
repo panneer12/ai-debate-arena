@@ -7,6 +7,8 @@ from unittest.mock import AsyncMock
 from agents.moderator import ModeratorAgent
 from agents.perspectives.conservative import ConservativeAgent
 from agents.perspectives.progressive import ProgressiveAgent
+from agents.evidence import FactCheckerAgent, DevilsAdvocateAgent
+from agents.synthesis import ArgumentAnalyzerAgent
 
 # Configure logging
 logging.basicConfig(
@@ -25,29 +27,45 @@ class MockProgressive(ProgressiveAgent):
     async def generate_response(self, context: str, prompt: str) -> str:
         return "I believe in social justice and equity. [Mocked Argument]"
 
+class MockFactChecker(FactCheckerAgent):
+    async def generate_response(self, context: str, prompt: str) -> str:
+        return "VERDICT: PARTIALLY_TRUE\nCONFIDENCE: 0.7\nEVIDENCE: Mixed evidence found. [Mocked]"
+
+class MockDevilsAdvocate(DevilsAdvocateAgent):
+    async def generate_response(self, context: str, prompt: str) -> str:
+        return "CHALLENGE TYPE: assumption\nQUESTION: What evidence supports this claim?\nREASONING: This assumes facts not in evidence. [Mocked]"
+
+class MockAnalyzer(ArgumentAnalyzerAgent):
+    async def generate_response(self, context: str, prompt: str) -> str:
+        return "LOGICAL_VALIDITY: 0.8\nEVIDENCE_QUALITY: 0.7\nFALLACIES: none\nSTRENGTHS: Clear logic\nWEAKNESSES: Could use more data"
+
 async def main():
     print("\n🚀 Initializing MOCK Debate (No API Key needed)\n")
 
-    # Initialize agents
+    # Initialize mocked agents
     moderator = ModeratorAgent()
     conservative = MockConservative()
     progressive = MockProgressive()
-    
-    # Mock moderator broadcast to avoid trying to use LLM for synthesis if it was hooked up
-    # But currently moderator doesn't use LLM for its own speech in the MVP, it uses hardcoded strings + broadcast
-    # However, if we add synthesis later, we'd need to mock that too.
+    fact_checker = MockFactChecker()
+    devils_advocate = MockDevilsAdvocate()
+    analyzer = MockAnalyzer()
     
     print("👥 Agents Ready:")
     print(f"  - {moderator.name}")
     print(f"  - {conservative.name}")
     print(f"  - {progressive.name}")
+    print(f"  - {fact_checker.name}")
+    print(f"  - {devils_advocate.name}")
+    print(f"  - {analyzer.name}")
     print("\n" + "="*50 + "\n")
 
     try:
-        # Start debate
+        # Start debate with all intelligence agents
         result = await moderator.start_debate(
             topic="Should we have universal healthcare?",
-            debaters=[conservative, progressive]
+            debaters=[conservative, progressive],
+            fact_checker=fact_checker,
+            devils_advocate=devils_advocate
         )
         
         print("\n" + "="*50)
