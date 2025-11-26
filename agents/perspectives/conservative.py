@@ -36,5 +36,15 @@ class ConservativeAgent(BaseDebateAgent):
         return await super().generate_response(context, full_prompt)
 
     async def process_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
-        """Process incoming message (placeholder for now)."""
-        return {}
+        """Process incoming message."""
+        from protocols.message_format import MessageType
+        
+        # Extract content from previous message
+        incoming_content = message.get('content', '')
+        prompt = f"Respond to the following argument: '{incoming_content}'"
+        
+        # Generate response
+        # Note: In a real system, we would pass more history as context
+        response_text = await self.generate_response("", prompt)
+        
+        return self._create_message(response_text, MessageType.ARGUMENT)
