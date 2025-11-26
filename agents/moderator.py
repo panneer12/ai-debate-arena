@@ -176,7 +176,7 @@ class ModeratorAgent(BaseDebateAgent):
         msg = self._create_message(content, MessageType.SYSTEM)
         debate_msg = DebateMessage(**msg)
         self.history.append(debate_msg)
-        print(f"\n[MODERATOR]: {content}\n")
+        logger.info(f"[MODERATOR]: {content}")
 
     def _get_context_for_agent(self, agent: BaseDebateAgent) -> str:
         """Get relevant history for an agent."""

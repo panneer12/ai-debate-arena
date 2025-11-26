@@ -4,6 +4,7 @@ import logging
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 import uuid
+import time
 
 from google import genai
 from google.genai import types
@@ -40,20 +41,28 @@ class BaseDebateAgent(abc.ABC):
         
         logger.info(f"Initialized agent {self.name} ({self.role}) with model {self.model_name}")
 
-    async def generate_response(self, context: str, prompt: str) -> str:
+    async def generate_response(self, context: str, prompt: str, metrics_collector: Optional[Any] = None) -> str:
         """
         Generate a response using the LLM.
 
         Args:
             context: The context of the debate so far.
             prompt: The specific prompt for this turn.
+            metrics_collector: Optional MetricsCollector instance.
 
         Returns:
             The generated response text.
         """
+        start_time = time.time()
+
+        # Add word limit instruction to keep responses concise
+        word_limit_instruction = "\n\nIMPORTANT: Keep your response concise and focused. Aim for 200-300 words maximum."
+        full_prompt = f"{context}\n\n{prompt}{word_limit_instruction}"
+
+        response_text = ""
+        error = None
+        
         try:
-            full_prompt = f"{context}\n\n{prompt}"
-            
             response = self.client.models.generate_content(
                 model=self.model_name,
                 contents=full_prompt,
@@ -62,10 +71,11 @@ class BaseDebateAgent(abc.ABC):
                     max_output_tokens=settings.llm_max_tokens
                 )
             )
-            
-            return response.text
+            response_text = response.text
+            return response_text
             
         except Exception as e:
+            error = e
             error_msg = str(e)
             
             # Handle quota exhausted errors
@@ -87,6 +97,17 @@ class BaseDebateAgent(abc.ABC):
             else:
                 logger.error(f"❌ Unexpected error for {self.name}: {e}")
                 return f"[{self.name} - An unexpected error occurred: {type(e).__name__}]"
+        
+        finally:
+            if metrics_collector:
+                metrics_collector.track_action(
+                    agent_name=self.name,
+                    action_type="generate_response",
+                    start_time=start_time,
+                    input_text=full_prompt,
+                    output_text=response_text,
+                    error=error
+                )
 
     @abc.abstractmethod
     async def process_message(self, message: Dict[str, Any]) -> Dict[str, Any]:

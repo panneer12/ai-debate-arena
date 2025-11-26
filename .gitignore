@@ -76,9 +76,13 @@ Thumbs.db
 
 # Project specific
 debates/
+data/debates/
 outputs/
+data/outputs/
 *.db
 *.sqlite
 
 # Internal documentation (not for public repo)
 docs/internal/
+docs/
+

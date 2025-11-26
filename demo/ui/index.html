@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Debate Arena - Truth Through Adversarial Discourse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/animations.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1>🎭 AI Debate Arena</h1>
+                <p class="tagline">Truth Through Adversarial Discourse</p>
+            </div>
+            <div class="header-controls">
+                <div class="status-indicator">
+                    <span class="status-dot status-ready" id="statusDot"></span>
+                    <span id="statusText">Ready</span>
+                </div>
+                <button id="themeToggle" class="theme-toggle" title="Toggle theme">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Left Sidebar: Control Panel -->
+            <aside class="control-panel">
+                <h2>Debate Setup</h2>
+
+                <!-- Quick Topics - At Top -->
+                <div class="quick-topics">
+                    <h3>Quick Topics</h3>
+                    <div class="topic-chips">
+                        <button class="topic-chip" data-topic="Should we have universal healthcare?">Universal Healthcare</button>
+                        <button class="topic-chip" data-topic="Should social media companies be liable for user content?">Social Media Liability</button>
+                        <button class="topic-chip" data-topic="Should we implement Universal Basic Income?">Universal Basic Income</button>
+                        <button class="topic-chip" data-topic="Should AI development have a moratorium?">AI Moratorium</button>
+                    </div>
+                </div>
+
+                <!-- Topic Input -->
+                <div class="form-group">
+                    <label for="topicInput">Topic</label>
+                    <textarea id="topicInput"
+                              placeholder="Enter a controversial topic for debate... (e.g., 'Should we have universal healthcare?')"
+                              rows="3"></textarea>
+                </div>
+
+                <!-- Control Buttons -->
+                <div class="control-buttons">
+                    <button id="startDebate" class="btn btn-primary">
+                        <span class="btn-icon">🚀</span>
+                        <span class="btn-text">Start Debate</span>
+                    </button>
+                    <div class="button-row">
+                        <button id="stopDebate" class="btn btn-secondary" disabled>
+                            <span class="btn-icon">⏹️</span>
+                            <span class="btn-text">Stop</span>
+                        </button>
+                        <button id="clearDebate" class="btn btn-tertiary">
+                            <span class="btn-icon">🗑️</span>
+                            <span class="btn-text">Clear</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Configuration Section -->
+                <div class="config-section">
+
+                    <div class="form-group">
+                        <label for="roundsInput">Debate Rounds</label>
+                        <input type="number" id="roundsInput" min="1" max="5" value="2">
+                        <small>Number of argument rounds (1-5)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Active Agents</label>
+                        <div class="agent-selector">
+                            <label class="agent-checkbox" title="Required - orchestrates debate flow">
+                                <input type="checkbox" value="moderator" checked disabled>
+                                <span class="agent-name">🎯 Moderator</span>
+                                <span class="badge badge-required">Required</span>
+                            </label>
+                            <label class="agent-checkbox">
+                                <input type="checkbox" value="conservative" checked>
+                                <span class="agent-name">🔴 Conservative</span>
+                            </label>
+                            <label class="agent-checkbox">
+                                <input type="checkbox" value="progressive" checked>
+                                <span class="agent-name">🔵 Progressive</span>
+                            </label>
+                            <label class="agent-checkbox">
+                                <input type="checkbox" value="factchecker" checked>
+                                <span class="agent-name">✅ Fact Checker</span>
+                            </label>
+                            <label class="agent-checkbox">
+                                <input type="checkbox" value="devilsadvocate" checked>
+                                <span class="agent-name">😈 Devil's Advocate</span>
+                            </label>
+                            <label class="agent-checkbox">
+                                <input type="checkbox" value="synthesizer" checked>
+                                <span class="agent-name">🧠 Synthesizer</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group voice-settings">
+                        <h3>Voice Settings</h3>
+                        <label class="toggle-label">
+                            <input type="checkbox" id="enableVoice" checked>
+                            <span>Auto-speak messages</span>
+                        </label>
+                        <div class="voice-speed-control">
+                            <label for="voiceSpeed">Speed: <span id="speedValue">1.0x</span></label>
+                            <input type="range" id="voiceSpeed" min="0.5" max="2" step="0.1" value="1">
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Center: Debate Feed -->
+            <section class="debate-feed">
+                <div class="feed-header">
+                    <h2>Live Debate</h2>
+                    <div class="round-indicator">
+                        Round <span id="currentRound">0</span> / <span id="totalRounds">0</span>
+                    </div>
+                </div>
+
+                <div id="messageContainer" class="message-container">
+                    <!-- Messages appear here -->
+                    <div class="message-placeholder">
+                        <div class="placeholder-icon">🎙️</div>
+                        <h3>No Active Debate</h3>
+                        <p>Configure your debate settings and click "Start Debate" to begin</p>
+                        <p class="placeholder-hint">Try one of the quick topics or enter your own controversial question</p>
+                    </div>
+                </div>
+
+                <!-- Voice Playback Controls -->
+                <div class="voice-playback">
+                    <div class="now-speaking" id="nowSpeaking">
+                        <span class="speaking-icon">🔇</span>
+                        <span id="speakingAgent">No one speaking</span>
+                    </div>
+                    <div class="voice-controls">
+                        <button id="pauseVoice" class="btn-icon-small" disabled title="Pause">⏸️</button>
+                        <button id="resumeVoice" class="btn-icon-small" disabled title="Resume">▶️</button>
+                        <button id="skipVoice" class="btn-icon-small" disabled title="Skip">⏭️</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Sidebar: Insights Panel -->
+            <aside class="insights-panel">
+                <h2>Live Insights</h2>
+
+                <div class="insight-card">
+                    <h3>📊 Debate Stats</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Messages</span>
+                            <span class="stat-value" id="statMessages">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Fact Checks</span>
+                            <span class="stat-value" id="statFactChecks">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Challenges</span>
+                            <span class="stat-value" id="statChallenges">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Arguments</span>
+                            <span class="stat-value" id="statArguments">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="insight-card">
+                    <h3>✅ Fact Checks</h3>
+                    <div id="factCheckList" class="fact-check-list">
+                        <p class="empty-state">No fact checks yet</p>
+                    </div>
+                </div>
+
+                <div class="insight-card">
+                    <h3>😈 Challenges</h3>
+                    <div id="challengeList" class="challenge-list">
+                        <p class="empty-state">No challenges yet</p>
+                    </div>
+                </div>
+
+                <div class="insight-card">
+                    <h3>⚠️ Logical Fallacies</h3>
+                    <div id="fallacyList" class="fallacy-list">
+                        <p class="empty-state">No fallacies detected</p>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Synthesis Modal -->
+    <div id="synthesisModal" class="modal hidden">
+        <div class="modal-overlay" id="modalOverlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎯 Debate Conclusion</h2>
+                <button class="modal-close" id="closeModalBtn">&times;</button>
+            </div>
+
+            <div class="synthesis-results">
+                <div class="synthesis-section">
+                    <h3>🤝 Common Ground</h3>
+                    <div id="commonGroundDisplay" class="synthesis-content">
+                        <p class="loading">Analyzing debate...</p>
+                    </div>
+                </div>
+
+                <div class="synthesis-section">
+                    <h3>💡 Key Arguments</h3>
+                    <div id="keyArgumentsDisplay" class="synthesis-content">
+                        <p class="loading">Processing arguments...</p>
+                    </div>
+                </div>
+
+                <div class="synthesis-section">
+                    <h3>🎓 Main Insights</h3>
+                    <div id="insightsDisplay" class="synthesis-content">
+                        <p class="loading">Generating insights...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button id="exportDebate" class="btn btn-secondary">
+                    <span class="btn-icon">📥</span>
+                    <span class="btn-text">Export Transcript</span>
+                </button>
+                <button id="closeSynthesis" class="btn btn-primary">
+                    <span class="btn-text">Close</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/voice.js"></script>
+    <script src="js/websocket.js"></script>
+    <script src="js/debate.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
