@@ -25,44 +25,7 @@ build/
 # Testing
 .pytest_cache/
 .coverage
-htmlcov/
-*.cover
-
-# Logs
-*.log
-logs/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-venv/
-env/
-ENV/
-*.egg-info/
-dist/
-build/
-
-# Environment
-.env
-.env.local
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Testing
-.pytest_cache/
-.coverage
+coverage.xml
 htmlcov/
 *.cover
 
@@ -85,4 +48,3 @@ data/outputs/
 # Internal documentation (not for public repo)
 docs/internal/
 docs/
-
