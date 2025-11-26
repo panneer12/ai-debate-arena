@@ -230,6 +230,8 @@ The project uses GitHub Actions to automatically check code quality on every pus
 - ✅ **Test Coverage**: Runs `pytest` with coverage reports
 - ✅ **Coverage Threshold**: Fails if coverage drops below 80%
 
+**⚠️ Important**: The CI/CD pipeline checks **all files** in the repository, not just modified files. This ensures consistent code quality across the entire codebase.
+
 ### Local Development Tools
 
 #### Pre-commit Hooks
@@ -246,6 +248,8 @@ This configures Git to:
 2. Auto-sort imports with **isort**
 3. Check for PEP 8 violations with **flake8**
 4. Prevent commits with code quality issues
+
+**⚠️ Important**: Pre-commit hooks only check **modified/staged files** to keep commits fast. The CI/CD pipeline will check all files to ensure repository-wide quality.
 
 #### Manual Code Quality Checks
 

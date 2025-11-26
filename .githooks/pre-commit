@@ -1,6 +1,7 @@
 #!/bin/bash
 # Pre-commit hook for AI Debate Arena
 # Automatically formats code and checks for violations before commit
+# NOTE: Only checks modified/staged files for speed. CI/CD checks all files.
 
 set -e
 

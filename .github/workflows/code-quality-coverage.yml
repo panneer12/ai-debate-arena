@@ -1,4 +1,6 @@
 name: Code Quality & Coverage
+# This workflow checks ALL files in the repository for code quality issues.
+# Pre-commit hooks only check modified files for speed.
 
 on:
   push:
