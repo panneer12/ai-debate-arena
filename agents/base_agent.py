@@ -43,7 +43,7 @@ class BaseDebateAgent(abc.ABC):
 
     async def generate_response(self, context: str, prompt: str, metrics_collector: Optional[Any] = None) -> str:
         """
-        Generate a response using the LLM.
+        Generate a response using the LLM with retry logic and fallback model.
 
         Args:
             context: The context of the debate so far.
@@ -53,6 +53,7 @@ class BaseDebateAgent(abc.ABC):
         Returns:
             The generated response text.
         """
+        import asyncio
         start_time = time.time()
 
         # Add word limit instruction to keep responses concise
@@ -61,43 +62,78 @@ class BaseDebateAgent(abc.ABC):
 
         response_text = ""
         error = None
-        
+
         try:
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=full_prompt,
-                config=types.GenerateContentConfig(
-                    temperature=settings.llm_temperature,
-                    max_output_tokens=settings.llm_max_tokens
-                )
-            )
-            response_text = response.text
-            return response_text
-            
-        except Exception as e:
-            error = e
-            error_msg = str(e)
-            
-            # Handle quota exhausted errors
-            if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
-                logger.warning(f"⚠️ API quota exceeded for {self.name}")
-                return f"[{self.name} - API quota exceeded. Please wait and try again, or upgrade your API plan.]"
-            
-            # Handle network/connectivity errors
-            elif "connection" in error_msg.lower() or "timeout" in error_msg.lower():
-                logger.warning(f"⚠️ Network error for {self.name}: {error_msg}")
-                return f"[{self.name} - Network error. Please check your connection.]"
-            
-            # Handle authentication errors
-            elif "401" in error_msg or "UNAUTHENTICATED" in error_msg:
-                logger.error(f"❌ Invalid API key for {self.name}")
-                return f"[{self.name} - Invalid API key. Please check your GOOGLE_API_KEY in .env file.]"
-            
-            # Handle other errors
-            else:
-                logger.error(f"❌ Unexpected error for {self.name}: {e}")
-                return f"[{self.name} - An unexpected error occurred: {type(e).__name__}]"
-        
+            # Try primary model with retries
+            for attempt in range(settings.retry_attempts):
+                try:
+                    response = self.client.models.generate_content(
+                        model=self.model_name,
+                        contents=full_prompt,
+                        config=types.GenerateContentConfig(
+                            temperature=settings.llm_temperature,
+                            max_output_tokens=settings.llm_max_tokens
+                        )
+                    )
+                    response_text = response.text
+                    return response_text
+
+                except Exception as e:
+                    error = e
+                    error_msg = str(e)
+
+                    # Handle server overload (503)
+                    if "503" in error_msg or "UNAVAILABLE" in error_msg or "overloaded" in error_msg.lower():
+                        if attempt < settings.retry_attempts - 1:
+                            wait_time = settings.retry_delay_seconds * (attempt + 1)
+                            logger.warning(f"⚠️ Server overloaded for {self.name}, retrying in {wait_time}s... (attempt {attempt + 1}/{settings.retry_attempts})")
+                            await asyncio.sleep(wait_time)
+                            continue
+                        else:
+                            # Try fallback model
+                            logger.warning(f"⚠️ Trying fallback model {settings.llm_fallback_model} for {self.name}")
+                            try:
+                                response = self.client.models.generate_content(
+                                    model=settings.llm_fallback_model,
+                                    contents=full_prompt,
+                                    config=types.GenerateContentConfig(
+                                        temperature=settings.llm_temperature,
+                                        max_output_tokens=settings.llm_max_tokens
+                                    )
+                                )
+                                response_text = response.text
+                                return response_text
+                            except Exception as fallback_error:
+                                logger.error(f"❌ Fallback model also failed for {self.name}: {fallback_error}")
+                                return f"[{self.name} - Server overloaded. Please try again in a moment.]"
+
+                    # Handle quota exhausted errors
+                    elif "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
+                        logger.warning(f"⚠️ API quota exceeded for {self.name}")
+                        return f"[{self.name} - API quota exceeded. Please wait and try again, or upgrade your API plan.]"
+
+                    # Handle network/connectivity errors
+                    elif "connection" in error_msg.lower() or "timeout" in error_msg.lower():
+                        if attempt < settings.retry_attempts - 1:
+                            logger.warning(f"⚠️ Network error for {self.name}, retrying... (attempt {attempt + 1}/{settings.retry_attempts})")
+                            await asyncio.sleep(settings.retry_delay_seconds)
+                            continue
+                        logger.warning(f"⚠️ Network error for {self.name}: {error_msg}")
+                        return f"[{self.name} - Network error. Please check your connection.]"
+
+                    # Handle authentication errors
+                    elif "401" in error_msg or "UNAUTHENTICATED" in error_msg:
+                        logger.error(f"❌ Invalid API key for {self.name}")
+                        return f"[{self.name} - Invalid API key. Please check your GOOGLE_API_KEY in .env file.]"
+
+                    # Handle other errors
+                    else:
+                        logger.error(f"❌ Unexpected error for {self.name}: {e}")
+                        return f"[{self.name} - An unexpected error occurred: {type(e).__name__}]"
+
+            # If all retries exhausted
+            return f"[{self.name} - Failed after {settings.retry_attempts} attempts]"
+
         finally:
             if metrics_collector:
                 metrics_collector.track_action(
