@@ -55,6 +55,27 @@ cp .env.example .env
 # Edit .env and add your GOOGLE_API_KEY
 ```
 
+### For Developers
+
+If you're contributing to the project, install development dependencies and set up Git hooks:
+
+```bash
+# Install development dependencies
+pip install -r requirements-dev.txt
+
+# Set up Git hooks for automatic code quality checks
+./scripts/setup-hooks.sh
+
+# (Optional) Install pre-commit framework
+pre-commit install
+```
+
+The pre-commit hook will automatically:
+- Format code with **Black** (line length: 100)
+- Sort imports with **isort**
+- Check code quality with **flake8** (PEP 8 compliance)
+- Prevent commits with violations
+
 ### Run a Debate
 
 ```bash
@@ -193,6 +214,69 @@ pytest --cov=agents --cov-report=html
 # Run specific tests
 pytest tests/test_perspectives.py -v
 ```
+
+---
+
+## Code Quality & CI/CD
+
+### Automated Code Quality Checks
+
+The project uses GitHub Actions to automatically check code quality on every push and pull request to the `main` branch.
+
+**CI/CD Pipeline includes:**
+- ✅ **PEP 8 Compliance**: Checks with `flake8`
+- ✅ **Code Formatting**: Validates with `black`
+- ✅ **Import Sorting**: Verifies with `isort`
+- ✅ **Test Coverage**: Runs `pytest` with coverage reports
+- ✅ **Coverage Threshold**: Fails if coverage drops below 80%
+
+**⚠️ Important**: The CI/CD pipeline checks **all files** in the repository, not just modified files. This ensures consistent code quality across the entire codebase.
+
+### Local Development Tools
+
+#### Pre-commit Hooks
+
+The project includes Git hooks that run automatically before each commit:
+
+```bash
+# Set up hooks (one-time setup)
+./scripts/setup-hooks.sh
+```
+
+This configures Git to:
+1. Auto-format code with **Black**
+2. Auto-sort imports with **isort**
+3. Check for PEP 8 violations with **flake8**
+4. Prevent commits with code quality issues
+
+**⚠️ Important**: Pre-commit hooks only check **modified/staged files** to keep commits fast. The CI/CD pipeline will check all files to ensure repository-wide quality.
+
+#### Manual Code Quality Checks
+
+```bash
+# Format code
+black .
+
+# Sort imports
+isort .
+
+# Check PEP 8 compliance
+flake8 .
+
+# Run type checking
+mypy .
+
+# Run all pre-commit checks manually
+pre-commit run --all-files
+```
+
+### Configuration
+
+All tools are configured in `pyproject.toml` and `.flake8`:
+- **Line length**: 100 characters
+- **Python target**: 3.10+
+- **Import style**: Black-compatible
+- **Coverage threshold**: 80%
 
 ---
 

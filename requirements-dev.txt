@@ -1,0 +1,25 @@
+# AI Debate Arena - Development Dependencies
+# =============================================
+# This file contains development tools for code quality, testing, and formatting
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+
+# Code Formatting
+black>=24.0.0
+
+# Linting
+flake8>=7.0.0
+flake8-docstrings>=1.7.0
+flake8-bugbear>=24.0.0
+
+# Import Sorting
+isort>=5.13.0
+
+# Type Checking
+mypy>=1.8.0
+
+# Pre-commit Hooks Framework
+pre-commit>=3.6.0
