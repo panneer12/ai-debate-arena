@@ -67,6 +67,11 @@ addopts = [
     "--cov-report=xml",
 ]
 asyncio_mode = "auto"
+markers = [
+    "unit: Fast unit tests with mocks (run on every commit)",
+    "integration: Slow integration tests with real API calls (run on schedule/manually)",
+    "slow: Tests that take a long time to run",
+]
 
 [tool.coverage.run]
 source = ["agents", "protocols", "tools", "utils", "memory"]
