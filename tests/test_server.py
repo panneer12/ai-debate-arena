@@ -12,8 +12,8 @@ import pytest
 from fastapi.testclient import TestClient
 from fastapi.websockets import WebSocket
 
-from demo.server import app
 from demo.debate_manager import DebateManager
+from demo.server import app
 
 
 class TestServerEndpoints:
