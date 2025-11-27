@@ -21,11 +21,10 @@ import pytest
 import pytest_asyncio
 
 from demo.debate_manager import DebateManager
-
-# Mark all tests in this file as integration tests
-pytestmark = pytest.mark.integration
 from memory.memory_bank import MemoryBank
 from protocols.message_format import DebateMessage, MessageType
+
+pytestmark = pytest.mark.integration
 
 
 class TestDebateManagerLifecycle:

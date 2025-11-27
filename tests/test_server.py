@@ -290,7 +290,7 @@ class TestWebSocketConnection:
 
     def test_websocket_receives_debate_messages(self, client, mock_debate_manager):
         """Test that WebSocket receives debate messages."""
-        with client.websocket_connect("/ws/debate/test_123") as websocket:
+        with client.websocket_connect("/ws/debate/test_123"):
             # The broadcast function should be available for the manager
             assert mock_debate_manager.broadcast is not None
 
@@ -387,7 +387,9 @@ class TestCORSConfiguration:
 
     def test_cors_headers_present(self, client, mock_debate_manager):
         """Test that CORS headers are present in responses."""
-        response = client.get("/api/debate/test_123/status", headers={"Origin": "http://localhost:8000"})
+        response = client.get(
+            "/api/debate/test_123/status", headers={"Origin": "http://localhost:8000"}
+        )
 
         # Should have CORS headers for GET requests
         assert response.status_code == 200
