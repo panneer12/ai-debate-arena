@@ -3,6 +3,14 @@ Test suite for DebateManager class.
 
 Tests debate lifecycle, message broadcasting, round progression,
 agent turn handling, analysis phase, synthesis phase, and memory integration.
+
+NOTE: These are INTEGRATION TESTS that make real API calls to LLM services.
+They are slow (2+ minutes) and cost money. Run them:
+- Manually before releases
+- On a schedule (nightly)
+- NOT on every commit
+
+Run with: pytest -m integration
 """
 
 import asyncio
@@ -15,6 +23,8 @@ import pytest_asyncio
 from demo.debate_manager import DebateManager
 from memory.memory_bank import MemoryBank
 from protocols.message_format import DebateMessage, MessageType
+
+pytestmark = pytest.mark.integration
 
 
 class TestDebateManagerLifecycle:

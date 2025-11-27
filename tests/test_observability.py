@@ -49,8 +49,8 @@ def test_error_capturing():
     assert "ValueError: Test Error" in metrics["errors"][0]
 
 
-@patch("utils.metrics.print")
-def test_model_io_sampling(mock_print):
+@patch("utils.metrics.logger")
+def test_model_io_sampling(mock_logger):
     # Force sampling
     collector = MetricsCollector("test_debate_id")
     collector.sample_rate = 1.0
@@ -63,9 +63,10 @@ def test_model_io_sampling(mock_print):
         output_text="output",
     )
 
-    mock_print.assert_called_once()
-    call_args = mock_print.call_args[0][0]
-    assert "model_io_sample" in call_args
+    # The print statement is disabled, but logger.debug is called
+    mock_logger.debug.assert_called_once()
+    call_args = str(mock_logger.debug.call_args)
+    assert "Model IO sample" in call_args or "TestAgent" in call_args
 
 
 def test_metrics_persistence_in_memory_bank(tmp_path):
