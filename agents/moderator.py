@@ -187,6 +187,31 @@ class ModeratorAgent(BaseDebateAgent):
     def _get_full_history(self) -> str:
         return "\n".join([f"{m.from_agent}: {m.content}" for m in self.history])
 
+    async def validate_topic(self, topic: str) -> tuple[bool, str]:
+        """
+        Validate if the topic is appropriate for debate.
+        Returns (is_valid, reason).
+        """
+        prompt = (
+            f"Topic: {topic}\n"
+            "Is this topic a valid, meaningful subject for a professional debate? "
+            "It must be a clear question or statement, not gibberish, not hate speech, and not explicit. "
+            "If it is nonsense or unclear, reject it. "
+            "Reply with exactly 'VALID' if it is okay. "
+            "If not, reply with 'INVALID: <reason>'."
+        )
+        # Use a short response
+        response = await self.generate_response(context="", prompt=prompt)
+        
+        if response.strip().upper().startswith("VALID"):
+            return True, ""
+        else:
+            reason = response.replace("INVALID:", "").strip()
+            # Fallback if LLM is chatty
+            if "VALID" in response.upper() and len(response) < 20:
+                 return True, ""
+            return False, reason
+
     async def process_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
         """Process incoming messages (not used in main loop currently)."""
         return {}
