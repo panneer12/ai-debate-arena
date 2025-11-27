@@ -90,7 +90,7 @@ class DebateManager {
             }
         } catch (error) {
             console.error('Failed to start debate:', error);
-            Utils.showToast('Failed to start debate', 'error');
+            Utils.showToast(error.message || 'Failed to start debate', 'error');
             throw error;
         }
     }

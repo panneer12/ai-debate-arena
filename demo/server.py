@@ -87,6 +87,12 @@ async def start_debate(request: StartDebateRequest):
     if debate_manager.is_running:
         raise HTTPException(status_code=400, detail="Debate already running")
 
+    # Validate Topic
+    if debate_manager.moderator:
+        is_valid, reason = await debate_manager.moderator.validate_topic(request.topic)
+        if not is_valid:
+             raise HTTPException(status_code=400, detail=f"Topic rejected: {reason}")
+
     # Generate debate ID upfront
     from datetime import datetime
     debate_id = datetime.now().strftime("%Y%m%d_%H%M%S")

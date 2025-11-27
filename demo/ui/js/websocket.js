@@ -254,7 +254,9 @@ class DebateAPIClient {
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorData = await response.json().catch(() => ({}));
+                const errorMessage = errorData.detail || `HTTP error! status: ${response.status}`;
+                throw new Error(errorMessage);
             }
 
             return await response.json();
