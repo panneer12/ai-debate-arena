@@ -3,12 +3,14 @@ Test suite for the FastAPI server and WebSocket endpoints.
 
 Tests all API endpoints, WebSocket connections, and error handling.
 """
-import pytest
+
 import asyncio
 import json
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
+
+import pytest
 from fastapi.testclient import TestClient
 from fastapi.websockets import WebSocket
-from unittest.mock import Mock, patch, AsyncMock, MagicMock
 
 from demo.server import app, debate_manager
 
@@ -47,14 +49,14 @@ class TestServerEndpoints:
 
     def test_start_debate_endpoint(self, client, reset_debate_manager):
         """Test the /api/debate/start endpoint."""
-        with patch.object(debate_manager, 'start_debate', new_callable=AsyncMock) as mock_start:
+        with patch.object(debate_manager, "start_debate", new_callable=AsyncMock) as mock_start:
             response = client.post(
                 "/api/debate/start",
                 json={
                     "topic": "Should AI be regulated?",
                     "rounds": 2,
-                    "agents": ["conservative", "progressive"]
-                }
+                    "agents": ["conservative", "progressive"],
+                },
             )
 
             assert response.status_code == 200
@@ -69,12 +71,7 @@ class TestServerEndpoints:
         debate_manager.is_running = True
 
         response = client.post(
-            "/api/debate/start",
-            json={
-                "topic": "Test topic",
-                "rounds": 1,
-                "agents": []
-            }
+            "/api/debate/start", json={"topic": "Test topic", "rounds": 1, "agents": []}
         )
 
         assert response.status_code == 400
@@ -83,31 +80,18 @@ class TestServerEndpoints:
     def test_start_debate_invalid_input(self, client, reset_debate_manager):
         """Test that invalid input to start_debate is rejected."""
         # Missing required fields
-        response = client.post(
-            "/api/debate/start",
-            json={"topic": "Test"}  # Missing rounds
-        )
+        response = client.post("/api/debate/start", json={"topic": "Test"})  # Missing rounds
         assert response.status_code == 422  # Unprocessable Entity
 
         # Invalid rounds (negative)
         response = client.post(
-            "/api/debate/start",
-            json={
-                "topic": "Test",
-                "rounds": -1,
-                "agents": []
-            }
+            "/api/debate/start", json={"topic": "Test", "rounds": -1, "agents": []}
         )
         assert response.status_code == 422
 
         # Invalid rounds (too high)
         response = client.post(
-            "/api/debate/start",
-            json={
-                "topic": "Test",
-                "rounds": 100,
-                "agents": []
-            }
+            "/api/debate/start", json={"topic": "Test", "rounds": 100, "agents": []}
         )
         assert response.status_code == 422
 
@@ -115,7 +99,7 @@ class TestServerEndpoints:
         """Test the /api/debate/stop endpoint."""
         debate_manager.is_running = True
 
-        with patch.object(debate_manager, 'stop_debate', new_callable=AsyncMock) as mock_stop:
+        with patch.object(debate_manager, "stop_debate", new_callable=AsyncMock) as mock_stop:
             response = client.post("/api/debate/stop")
 
             assert response.status_code == 200
@@ -127,7 +111,7 @@ class TestServerEndpoints:
         """Test stopping debate when none is running."""
         debate_manager.is_running = False
 
-        with patch.object(debate_manager, 'stop_debate', new_callable=AsyncMock):
+        with patch.object(debate_manager, "stop_debate", new_callable=AsyncMock):
             response = client.post("/api/debate/stop")
             assert response.status_code == 200
 
@@ -159,9 +143,11 @@ class TestServerEndpoints:
 
         # Mock memory loading
         mock_memory = MagicMock()
-        mock_memory.get_full_history = Mock(return_value=[
-            {"from_agent": "Moderator", "content": "Opening statement", "type": "OPENING"}
-        ])
+        mock_memory.get_full_history = Mock(
+            return_value=[
+                {"from_agent": "Moderator", "content": "Opening statement", "type": "OPENING"}
+            ]
+        )
 
         with patch("demo.server.MemoryBank") as MockMemoryBank:
             MockMemoryBank.return_value = mock_memory
@@ -187,14 +173,16 @@ class TestServerEndpoints:
         debate_id = "20231115_120000"
 
         mock_memory = MagicMock()
-        mock_memory.get_full_history = Mock(return_value=[
-            {
-                "from_agent": "Moderator",
-                "content": "Opening statement",
-                "type": "OPENING",
-                "timestamp": "2023-11-15T12:00:00"
-            }
-        ])
+        mock_memory.get_full_history = Mock(
+            return_value=[
+                {
+                    "from_agent": "Moderator",
+                    "content": "Opening statement",
+                    "type": "OPENING",
+                    "timestamp": "2023-11-15T12:00:00",
+                }
+            ]
+        )
 
         with patch("demo.server.MemoryBank") as MockMemoryBank:
             MockMemoryBank.return_value = mock_memory
@@ -211,13 +199,11 @@ class TestServerEndpoints:
         debate_id = "20231115_120000"
 
         mock_memory = MagicMock()
-        mock_memory.get_full_history = Mock(return_value=[
-            {
-                "from_agent": "Moderator",
-                "content": "Opening statement",
-                "type": "OPENING"
-            }
-        ])
+        mock_memory.get_full_history = Mock(
+            return_value=[
+                {"from_agent": "Moderator", "content": "Opening statement", "type": "OPENING"}
+            ]
+        )
 
         with patch("demo.server.MemoryBank") as MockMemoryBank:
             MockMemoryBank.return_value = mock_memory
@@ -274,7 +260,7 @@ class TestWebSocketConnection:
 
     def test_websocket_receives_debate_messages(self, client):
         """Test that WebSocket receives debate messages."""
-        with patch.object(debate_manager, 'broadcast', new_callable=AsyncMock):
+        with patch.object(debate_manager, "broadcast", new_callable=AsyncMock):
             with client.websocket_connect("/ws") as websocket:
                 # Receive connection message
                 data = websocket.receive_json()
@@ -323,14 +309,9 @@ class TestDebateManagerIntegration:
     async def test_debate_lifecycle(self, client, reset_debate_manager):
         """Test complete debate lifecycle: start -> running -> stop."""
         # Start debate
-        with patch.object(debate_manager, 'start_debate', new_callable=AsyncMock):
+        with patch.object(debate_manager, "start_debate", new_callable=AsyncMock):
             response = client.post(
-                "/api/debate/start",
-                json={
-                    "topic": "Test topic",
-                    "rounds": 1,
-                    "agents": []
-                }
+                "/api/debate/start", json={"topic": "Test topic", "rounds": 1, "agents": []}
             )
             assert response.status_code == 200
 
@@ -340,7 +321,7 @@ class TestDebateManagerIntegration:
         assert response.json()["is_running"] is True
 
         # Stop debate
-        with patch.object(debate_manager, 'stop_debate', new_callable=AsyncMock):
+        with patch.object(debate_manager, "stop_debate", new_callable=AsyncMock):
             response = client.post("/api/debate/stop")
             assert response.status_code == 200
 
@@ -350,12 +331,7 @@ class TestDebateManagerIntegration:
 
         # Try to start second debate
         response = client.post(
-            "/api/debate/start",
-            json={
-                "topic": "Second debate",
-                "rounds": 1,
-                "agents": []
-            }
+            "/api/debate/start", json={"topic": "Second debate", "rounds": 1, "agents": []}
         )
 
         assert response.status_code == 400
@@ -372,10 +348,7 @@ class TestCORSConfiguration:
 
     def test_cors_headers_present(self, client):
         """Test that CORS headers are present in responses."""
-        response = client.options(
-            "/api/debate/status",
-            headers={"Origin": "http://localhost:8000"}
-        )
+        response = client.options("/api/debate/status", headers={"Origin": "http://localhost:8000"})
 
         # Should have CORS headers
         assert response.status_code in [200, 204]
@@ -391,14 +364,9 @@ class TestErrorHandlingInServer:
 
     def test_internal_server_error_handling(self, client):
         """Test that internal server errors are handled gracefully."""
-        with patch.object(debate_manager, 'start_debate', side_effect=Exception("Test error")):
+        with patch.object(debate_manager, "start_debate", side_effect=Exception("Test error")):
             response = client.post(
-                "/api/debate/start",
-                json={
-                    "topic": "Test",
-                    "rounds": 1,
-                    "agents": []
-                }
+                "/api/debate/start", json={"topic": "Test", "rounds": 1, "agents": []}
             )
 
             # Should return 500 or handle error gracefully
@@ -407,9 +375,7 @@ class TestErrorHandlingInServer:
     def test_malformed_json_request(self, client):
         """Test that malformed JSON requests are rejected."""
         response = client.post(
-            "/api/debate/start",
-            data="not valid json",
-            headers={"Content-Type": "application/json"}
+            "/api/debate/start", data="not valid json", headers={"Content-Type": "application/json"}
         )
 
         assert response.status_code == 422

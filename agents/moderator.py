@@ -1,14 +1,16 @@
 """Moderator agent for AI Debate Arena."""
-import logging
+
 import asyncio
-from typing import List, Dict, Any, Optional
+import logging
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 from agents.base_agent import BaseDebateAgent
+from protocols.debate_protocol import DebatePhase, DebateProtocol
 from protocols.message_format import DebateMessage, MessageType
-from protocols.debate_protocol import DebateProtocol, DebatePhase
 
 logger = logging.getLogger(__name__)
+
 
 class ModeratorAgent(BaseDebateAgent):
     """
@@ -26,12 +28,12 @@ class ModeratorAgent(BaseDebateAgent):
         self.history: List[DebateMessage] = []
 
     async def start_debate(
-        self, 
-        topic: str, 
+        self,
+        topic: str,
         debaters: List[BaseDebateAgent],
         fact_checker: Optional[BaseDebateAgent] = None,
         devils_advocate: Optional[BaseDebateAgent] = None,
-        synthesizer: Optional[BaseDebateAgent] = None
+        synthesizer: Optional[BaseDebateAgent] = None,
     ) -> Dict[str, Any]:
         """
         Start and manage the full debate lifecycle.
@@ -41,25 +43,25 @@ class ModeratorAgent(BaseDebateAgent):
         self.fact_checker = fact_checker
         self.devils_advocate = devils_advocate
         self.synthesizer = synthesizer
-        
+
         logger.info(f"Starting debate on topic: {self.topic}")
-        
+
         # Announce start
         await self._broadcast(f"Welcome to the AI Debate Arena. The topic is: {self.topic}")
-        
+
         # Main Debate Loop
         self.current_phase = DebatePhase.OPENING_STATEMENTS
         while self.current_phase != DebatePhase.COMPLETE:
             await self._run_phase()
             self.current_phase = self.protocol.get_next_phase(self.current_phase)
-            
+
         # Wrap up
         await self._broadcast("The debate has concluded. Thank you all.")
-        
+
         return {
             "topic": self.topic,
             "history": [m.to_dict() for m in self.history],
-            "synthesis": {} # Placeholder for synthesis result
+            "synthesis": {},  # Placeholder for synthesis result
         }
 
     async def _run_phase(self):
@@ -70,14 +72,14 @@ class ModeratorAgent(BaseDebateAgent):
 
         logger.info(f"Starting phase: {config.name}")
         await self._broadcast(f"Starting phase: {config.name}. {config.description}")
-        
+
         if self.current_phase == DebatePhase.OPENING_STATEMENTS:
             await self._run_sequential_turns()
         elif self.current_phase == DebatePhase.FIRST_REBUTTALS:
             # Reverse order for rebuttals
             self.participants.reverse()
             await self._run_sequential_turns()
-            self.participants.reverse() # Restore order
+            self.participants.reverse()  # Restore order
         elif self.current_phase == DebatePhase.CROSS_EXAMINATION:
             await self._run_cross_examination()
         elif self.current_phase == DebatePhase.CLOSING_ARGUMENTS:
@@ -90,27 +92,27 @@ class ModeratorAgent(BaseDebateAgent):
         """Give each participant a turn."""
         for agent in self.participants:
             await self._broadcast(f"{agent.name}, it is your turn.")
-            
+
             # Construct context from history
             context = self._get_context_for_agent(agent)
             prompt = f"It is your turn in the {self.current_phase} phase. The topic is '{self.topic}'. Please provide your input."
-            
+
             response_text = await agent.generate_response(context, prompt)
-            
+
             message = self._create_message(
                 content=response_text,
-                msg_type=MessageType.ARGUMENT, # Default to argument
-                to_agent=None # Broadcast
+                msg_type=MessageType.ARGUMENT,  # Default to argument
+                to_agent=None,  # Broadcast
             )
             # Override from_agent since _create_message uses self.name
             message["from_agent"] = agent.name
             message["role"] = agent.role
-            
+
             # Store and broadcast
             debate_msg = DebateMessage(**message)
             self.history.append(debate_msg)
             logger.info(f"{agent.name}: {response_text}")
-            
+
             # Simulate real-time fact checking (async in future)
             if self.fact_checker:
                 # TODO: Trigger fact check
@@ -124,7 +126,7 @@ class ModeratorAgent(BaseDebateAgent):
 
         agent_a = self.participants[0]
         agent_b = self.participants[1]
-        
+
         # A asks B
         await self._facilitate_qa(agent_a, agent_b)
         # B asks A
@@ -133,12 +135,14 @@ class ModeratorAgent(BaseDebateAgent):
     async def _facilitate_qa(self, asker, answerer):
         """Manage Q&A interaction."""
         await self._broadcast(f"{asker.name}, please ask a question to {answerer.name}.")
-        
+
         # Ask
         context = self._get_context_for_agent(asker)
-        q_prompt = f"Ask a critical question to {answerer.name} about their position on '{self.topic}'."
+        q_prompt = (
+            f"Ask a critical question to {answerer.name} about their position on '{self.topic}'."
+        )
         question_text = await asker.generate_response(context, q_prompt)
-        
+
         q_msg = DebateMessage(**self._create_message(question_text, MessageType.QUESTION))
         q_msg.from_agent = asker.name
         q_msg.role = asker.role
@@ -150,7 +154,7 @@ class ModeratorAgent(BaseDebateAgent):
         context = self._get_context_for_agent(answerer)
         a_prompt = f"Answer the question from {asker.name}: '{question_text}'"
         answer_text = await answerer.generate_response(context, a_prompt)
-        
+
         a_msg = DebateMessage(**self._create_message(answer_text, MessageType.ANSWER))
         a_msg.from_agent = answerer.name
         a_msg.role = answerer.role
@@ -162,9 +166,9 @@ class ModeratorAgent(BaseDebateAgent):
         await self._broadcast("Synthesizer, please analyze the debate.")
         context = self._get_full_history()
         prompt = f"Analyze the debate on '{self.topic}' and provide a synthesis."
-        
+
         synthesis_text = await self.synthesizer.generate_response(context, prompt)
-        
+
         msg = DebateMessage(**self._create_message(synthesis_text, MessageType.SYNTHESIS))
         msg.from_agent = self.synthesizer.name
         msg.role = self.synthesizer.role
@@ -202,14 +206,14 @@ class ModeratorAgent(BaseDebateAgent):
         )
         # Use a short response
         response = await self.generate_response(context="", prompt=prompt)
-        
+
         if response.strip().upper().startswith("VALID"):
             return True, ""
         else:
             reason = response.replace("INVALID:", "").strip()
             # Fallback if LLM is chatty
             if "VALID" in response.upper() and len(response) < 20:
-                 return True, ""
+                return True, ""
             return False, reason
 
     async def process_message(self, message: Dict[str, Any]) -> Dict[str, Any]:

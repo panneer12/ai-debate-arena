@@ -2,14 +2,15 @@
 FastAPI Server for AI Debate Arena.
 Serves the Web UI and handles WebSocket connections.
 """
-import logging
-import asyncio
-from typing import Dict, List, Optional
-from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
-from fastapi.staticfiles import StaticFiles
+import asyncio
+import logging
+from contextlib import asynccontextmanager
+from typing import Dict, List, Optional
+
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from demo.debate_manager import DebateManager
@@ -21,14 +22,17 @@ logger = logging.getLogger("server")
 # Global Debate Manager
 debate_manager: Optional[DebateManager] = None
 
+
 # -- Data Models --
 class StartDebateRequest(BaseModel):
     topic: str
     rounds: int = 2
     agents: List[str]
 
+
 class StopDebateRequest(BaseModel):
     debate_id: Optional[str] = None
+
 
 # -- Connection Manager --
 class ConnectionManager:
@@ -49,7 +53,9 @@ class ConnectionManager:
             except Exception as e:
                 logger.error(f"Error broadcasting: {e}")
 
+
 manager = ConnectionManager()
+
 
 # -- Lifespan --
 @asynccontextmanager
@@ -68,6 +74,7 @@ async def lifespan(app: FastAPI):
     if debate_manager and debate_manager.is_running:
         await debate_manager.stop_debate()
 
+
 # -- App --
 app = FastAPI(lifespan=lifespan)
 
@@ -82,6 +89,7 @@ app.add_middleware(
 
 # -- API Endpoints --
 
+
 @app.post("/api/debate/start")
 async def start_debate(request: StartDebateRequest):
     if debate_manager.is_running:
@@ -91,10 +99,11 @@ async def start_debate(request: StartDebateRequest):
     if debate_manager.moderator:
         is_valid, reason = await debate_manager.moderator.validate_topic(request.topic)
         if not is_valid:
-             raise HTTPException(status_code=400, detail=f"Topic rejected: {reason}")
+            raise HTTPException(status_code=400, detail=f"Topic rejected: {reason}")
 
     # Generate debate ID upfront
     from datetime import datetime
+
     debate_id = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     # Run in background
@@ -103,25 +112,25 @@ async def start_debate(request: StartDebateRequest):
             topic=request.topic,
             rounds=request.rounds,
             active_agents=request.agents,
-            debate_id=debate_id  # Pass the ID we generated
+            debate_id=debate_id,  # Pass the ID we generated
         )
     )
     return {"status": "started", "topic": request.topic, "debate_id": debate_id}
+
 
 @app.post("/api/debate/stop")
 async def stop_debate(request: StopDebateRequest):
     if not debate_manager.is_running:
         return {"status": "already_stopped"}
-        
+
     await debate_manager.stop_debate()
     return {"status": "stopping"}
 
+
 @app.get("/api/debate/{debate_id}/status")
 async def get_status(debate_id: str):
-    return {
-        "is_running": debate_manager.is_running,
-        "debate_id": debate_manager.debate_id
-    }
+    return {"is_running": debate_manager.is_running, "debate_id": debate_manager.debate_id}
+
 
 @app.get("/api/debate/{debate_id}/history")
 async def get_history(debate_id: str):
@@ -130,15 +139,13 @@ async def get_history(debate_id: str):
         raise HTTPException(status_code=404, detail="No active debate")
 
     history = debate_manager.memory.get_full_history()
-    return {
-        "debate_id": debate_id,
-        "messages": [msg.to_dict() for msg in history]
-    }
+    return {"debate_id": debate_id, "messages": [msg.to_dict() for msg in history]}
+
 
 @app.get("/api/debate/{debate_id}/export")
 async def export_debate(debate_id: str, format: str = "txt"):
     """Export debate transcript."""
-    from fastapi.responses import PlainTextResponse, JSONResponse
+    from fastapi.responses import JSONResponse, PlainTextResponse
 
     if not debate_manager.memory:
         raise HTTPException(status_code=404, detail="No active debate")
@@ -146,10 +153,9 @@ async def export_debate(debate_id: str, format: str = "txt"):
     history = debate_manager.memory.get_full_history()
 
     if format == "json":
-        return JSONResponse({
-            "debate_id": debate_id,
-            "messages": [msg.to_dict() for msg in history]
-        })
+        return JSONResponse(
+            {"debate_id": debate_id, "messages": [msg.to_dict() for msg in history]}
+        )
     elif format == "txt":
         # Create text transcript
         lines = []
@@ -169,11 +175,14 @@ async def export_debate(debate_id: str, format: str = "txt"):
     else:
         raise HTTPException(status_code=400, detail=f"Unsupported format: {format}")
 
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
 
+
 # -- WebSocket --
+
 
 @app.websocket("/ws/debate/{debate_id}")
 async def websocket_endpoint(websocket: WebSocket, debate_id: str):
@@ -186,10 +195,12 @@ async def websocket_endpoint(websocket: WebSocket, debate_id: str):
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
+
 # -- Static Files --
 # Mount the 'demo/ui' directory to serve HTML/JS/CSS
 app.mount("/", StaticFiles(directory="demo/ui", html=True), name="ui")
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
