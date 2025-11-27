@@ -66,10 +66,19 @@ ANALYSIS: [Brief explanation of the alignment]"""
     def _parse_common_ground_response(self, response: str) -> Dict[str, Any]:
         """
         Parse the common ground finder's response.
-        
+
         Returns:
             Dictionary with parsed analysis fields.
         """
+        if not response:
+            return {
+                "shared_values": [],
+                "agreed_facts": [],
+                "convergent_solutions": [],
+                "agreement_score": 0,
+                "analysis": "No response generated"
+            }
+
         lines = response.strip().split("\n")
         
         result = {
