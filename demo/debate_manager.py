@@ -8,6 +8,7 @@ import json
 from typing import List, Dict, Any, Optional, Callable
 from datetime import datetime
 
+from config import settings
 from agents.moderator import ModeratorAgent
 from agents.perspectives.conservative import ConservativeAgent
 from agents.perspectives.progressive import ProgressiveAgent
@@ -147,10 +148,16 @@ class DebateManager:
             # 1. Conservative Turn
             await self._handle_turn(self.conservative, round_num)
             if self.should_stop: break
-            
+
+            # Delay between agents to avoid API overload
+            await asyncio.sleep(settings.agent_delay_seconds)
+
             # 2. Progressive Turn
             await self._handle_turn(self.progressive, round_num)
             if self.should_stop: break
+
+            # Delay before next round
+            await asyncio.sleep(settings.agent_delay_seconds)
             
         # -- Synthesis --
         if not self.should_stop:

@@ -16,9 +16,15 @@ class Settings(BaseSettings):
     google_search_engine_id: Optional[str] = None
     
     # LLM Configuration
-    llm_model: str = "gemini-1.5-flash"  # Using stable model
+    llm_model: str = "gemini-2.5-flash-lite"  # Using stable model with fallback
+    llm_fallback_model: str = "gemini-2.5-flash"  # Lighter fallback
     llm_temperature: float = 0.7
     llm_max_tokens: int = 1024
+
+    # Rate Limiting
+    agent_delay_seconds: float = 1.0  # Delay between agent calls
+    retry_attempts: int = 3
+    retry_delay_seconds: float = 2.0
     
     # Debate Configuration
     max_debate_rounds: int = 5
@@ -34,8 +40,8 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     log_format: str = "detailed"
     
-    # Server
-    port: int = 8080
+    # Server (Cloud Run uses PORT env var)
+    port: int = int(os.getenv("PORT", "8080"))
     host: str = "0.0.0.0"
     
     # Cache
