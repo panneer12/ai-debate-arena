@@ -48,3 +48,19 @@ data/outputs/
 # Internal documentation (not for public repo)
 docs/internal/
 docs/
+
+# Scratch/temporary files
+scratch/
+
+# Demo outputs and examples (local only)
+demo/examples/
+
+# IDE/Editor specific
+.claude/
+
+# Deployment files (local only for now)
+deployment/
+
+# Docker files (local only for now)
+.dockerignore
+Dockerfile

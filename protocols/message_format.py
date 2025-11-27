@@ -1,12 +1,16 @@
 """Message protocol for AI Debate Arena."""
-from enum import Enum
-from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field
-from datetime import datetime
+
 import uuid
+from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field
+
 
 class MessageType(str, Enum):
     """Types of messages exchanged in the debate."""
+
     OPENING_STATEMENT = "OPENING_STATEMENT"
     CLAIM = "CLAIM"
     ARGUMENT = "ARGUMENT"
@@ -17,15 +21,19 @@ class MessageType(str, Enum):
     SYNTHESIS = "SYNTHESIS"
     SYSTEM = "SYSTEM"  # For moderator instructions
 
+
 class Evidence(BaseModel):
     """Evidence supporting a claim."""
+
     source: str
     content: str
     credibility_score: float = Field(default=0.0, ge=0.0, le=1.0)
     url: Optional[str] = None
 
+
 class DebateMessage(BaseModel):
     """Standard message format for agent communication."""
+
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     type: MessageType
     from_agent: str
@@ -36,7 +44,7 @@ class DebateMessage(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.now)
     round_number: int = 0
     role: Optional[str] = None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert message to dictionary."""
-        return self.model_dump(mode='json')
+        return self.model_dump(mode="json")

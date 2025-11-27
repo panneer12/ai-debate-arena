@@ -2,20 +2,22 @@
 Integration test for AI Debate Arena.
 Tests the full flow: API -> DebateManager -> WebSocket
 """
+
 import asyncio
-import sys
-import os
 import json
+import os
+import sys
 from datetime import datetime
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+
 async def test_debate_manager():
     """Test DebateManager directly without server."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("TEST 1: DebateManager Direct Test")
-    print("="*60)
+    print("=" * 60)
 
     try:
         from demo.debate_manager import DebateManager
@@ -25,7 +27,9 @@ async def test_debate_manager():
 
         async def mock_broadcast(message):
             messages_received.append(message)
-            print(f"📨 Broadcast: {message.get('type', 'UNKNOWN')} from {message.get('from_agent', 'UNKNOWN')}")
+            print(
+                f"📨 Broadcast: {message.get('type', 'UNKNOWN')} from {message.get('from_agent', 'UNKNOWN')}"
+            )
 
         # Initialize debate manager
         print("\n1. Initializing DebateManager...")
@@ -41,9 +45,7 @@ async def test_debate_manager():
         rounds = 1
 
         # Start debate (non-blocking)
-        debate_task = asyncio.create_task(
-            manager.start_debate(topic, rounds, active_agents=None)
-        )
+        debate_task = asyncio.create_task(manager.start_debate(topic, rounds, active_agents=None))
 
         # Wait a bit and check messages
         print("4. Waiting for messages...")
@@ -53,9 +55,9 @@ async def test_debate_manager():
 
         # Print first few messages
         for i, msg in enumerate(messages_received[:5]):
-            msg_type = msg.get('type', 'UNKNOWN')
-            from_agent = msg.get('from_agent', 'UNKNOWN')
-            content_preview = str(msg.get('content', ''))[:50]
+            msg_type = msg.get("type", "UNKNOWN")
+            from_agent = msg.get("from_agent", "UNKNOWN")
+            content_preview = str(msg.get("content", ""))[:50]
             print(f"  {i+1}. [{msg_type}] {from_agent}: {content_preview}...")
 
         # Stop debate
@@ -69,21 +71,26 @@ async def test_debate_manager():
         except asyncio.CancelledError:
             pass
 
-        print("\n✅ TEST 1 PASSED" if len(messages_received) > 0 else "\n❌ TEST 1 FAILED: No messages received")
+        print(
+            "\n✅ TEST 1 PASSED"
+            if len(messages_received) > 0
+            else "\n❌ TEST 1 FAILED: No messages received"
+        )
         return len(messages_received) > 0
 
     except Exception as e:
         print(f"\n❌ TEST 1 FAILED: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
 
 async def test_api_endpoint():
     """Test the API endpoint using httpx."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("TEST 2: API Endpoint Test")
-    print("="*60)
+    print("=" * 60)
 
     try:
         import httpx
@@ -104,13 +111,10 @@ async def test_api_endpoint():
             start_payload = {
                 "topic": "Test Topic",
                 "rounds": 1,
-                "agents": ["moderator", "conservative", "progressive"]
+                "agents": ["moderator", "conservative", "progressive"],
             }
 
-            response = await client.post(
-                f"{base_url}/api/debate/start",
-                json=start_payload
-            )
+            response = await client.post(f"{base_url}/api/debate/start", json=start_payload)
 
             print(f"   Status: {response.status_code}")
             result = response.json()
@@ -136,8 +140,7 @@ async def test_api_endpoint():
             # Stop debate
             print("\n5. Stopping debate...")
             response = await client.post(
-                f"{base_url}/api/debate/stop",
-                json={"debate_id": debate_id}
+                f"{base_url}/api/debate/stop", json={"debate_id": debate_id}
             )
             print(f"   Status: {response.status_code}")
             print(f"   Response: {response.json()}")
@@ -152,15 +155,16 @@ async def test_api_endpoint():
     except Exception as e:
         print(f"\n❌ TEST 2 FAILED: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
 
 async def test_websocket_connection():
     """Test WebSocket connection."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("TEST 3: WebSocket Connection Test")
-    print("="*60)
+    print("=" * 60)
 
     try:
         import websockets
@@ -190,15 +194,16 @@ async def test_websocket_connection():
     except Exception as e:
         print(f"\n❌ TEST 3 FAILED: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
 
 async def test_single_agent():
     """Test a single agent response."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("TEST 4: Single Agent Test")
-    print("="*60)
+    print("=" * 60)
 
     try:
         from agents.moderator import ModeratorAgent
@@ -225,15 +230,16 @@ async def test_single_agent():
     except Exception as e:
         print(f"\n❌ TEST 4 FAILED: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
 
 async def main():
     """Run all integration tests."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("AI DEBATE ARENA - INTEGRATION TESTS")
-    print("="*60)
+    print("=" * 60)
     print(f"Time: {datetime.now()}")
 
     results = {}
@@ -257,9 +263,9 @@ async def main():
     results["websocket"] = await test_websocket_connection()
 
     # Summary
-    print("\n\n" + "="*60)
+    print("\n\n" + "=" * 60)
     print("TEST SUMMARY")
-    print("="*60)
+    print("=" * 60)
 
     for test_name, result in results.items():
         if result is True:

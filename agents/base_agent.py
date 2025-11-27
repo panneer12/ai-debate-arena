@@ -1,10 +1,11 @@
 """Base agent class for AI Debate Arena."""
+
 import abc
 import logging
-from typing import List, Optional, Dict, Any
-from datetime import datetime
-import uuid
 import time
+import uuid
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 from google import genai
 from google.genai import types
@@ -13,10 +14,11 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
+
 class BaseDebateAgent(abc.ABC):
     """
     Abstract base class for all debate agents.
-    
+
     Attributes:
         name (str): The name of the agent.
         role (str): The role of the agent (e.g., "Debater", "Moderator").
@@ -34,14 +36,16 @@ class BaseDebateAgent(abc.ABC):
         self.name = name
         self.role = role
         self.id = str(uuid.uuid4())
-        
+
         # Initialize Gemini client
         self.client = genai.Client(api_key=settings.google_api_key)
         self.model_name = settings.llm_model
-        
+
         logger.info(f"Initialized agent {self.name} ({self.role}) with model {self.model_name}")
 
-    async def generate_response(self, context: str, prompt: str, metrics_collector: Optional[Any] = None) -> str:
+    async def generate_response(
+        self, context: str, prompt: str, metrics_collector: Optional[Any] = None
+    ) -> str:
         """
         Generate a response using the LLM with retry logic and fallback model.
 
@@ -54,10 +58,13 @@ class BaseDebateAgent(abc.ABC):
             The generated response text.
         """
         import asyncio
+
         start_time = time.time()
 
         # Add word limit instruction to keep responses concise
-        word_limit_instruction = "\n\nIMPORTANT: Keep your response concise and focused. Aim for 200-300 words maximum."
+        word_limit_instruction = (
+            "\n\nIMPORTANT: Keep your response concise and focused. Aim for 200-300 words maximum."
+        )
         full_prompt = f"{context}\n\n{prompt}{word_limit_instruction}"
 
         response_text = ""
@@ -72,8 +79,8 @@ class BaseDebateAgent(abc.ABC):
                         contents=full_prompt,
                         config=types.GenerateContentConfig(
                             temperature=settings.llm_temperature,
-                            max_output_tokens=settings.llm_max_tokens
-                        )
+                            max_output_tokens=settings.llm_max_tokens,
+                        ),
                     )
                     response_text = response.text
                     return response_text
@@ -83,28 +90,38 @@ class BaseDebateAgent(abc.ABC):
                     error_msg = str(e)
 
                     # Handle server overload (503)
-                    if "503" in error_msg or "UNAVAILABLE" in error_msg or "overloaded" in error_msg.lower():
+                    if (
+                        "503" in error_msg
+                        or "UNAVAILABLE" in error_msg
+                        or "overloaded" in error_msg.lower()
+                    ):
                         if attempt < settings.retry_attempts - 1:
                             wait_time = settings.retry_delay_seconds * (attempt + 1)
-                            logger.warning(f"⚠️ Server overloaded for {self.name}, retrying in {wait_time}s... (attempt {attempt + 1}/{settings.retry_attempts})")
+                            logger.warning(
+                                f"⚠️ Server overloaded for {self.name}, retrying in {wait_time}s... (attempt {attempt + 1}/{settings.retry_attempts})"
+                            )
                             await asyncio.sleep(wait_time)
                             continue
                         else:
                             # Try fallback model
-                            logger.warning(f"⚠️ Trying fallback model {settings.llm_fallback_model} for {self.name}")
+                            logger.warning(
+                                f"⚠️ Trying fallback model {settings.llm_fallback_model} for {self.name}"
+                            )
                             try:
                                 response = self.client.models.generate_content(
                                     model=settings.llm_fallback_model,
                                     contents=full_prompt,
                                     config=types.GenerateContentConfig(
                                         temperature=settings.llm_temperature,
-                                        max_output_tokens=settings.llm_max_tokens
-                                    )
+                                        max_output_tokens=settings.llm_max_tokens,
+                                    ),
                                 )
                                 response_text = response.text
                                 return response_text
                             except Exception as fallback_error:
-                                logger.error(f"❌ Fallback model also failed for {self.name}: {fallback_error}")
+                                logger.error(
+                                    f"❌ Fallback model also failed for {self.name}: {fallback_error}"
+                                )
                                 return f"[{self.name} - Server overloaded. Please try again in a moment.]"
 
                     # Handle quota exhausted errors
@@ -115,7 +132,9 @@ class BaseDebateAgent(abc.ABC):
                     # Handle network/connectivity errors
                     elif "connection" in error_msg.lower() or "timeout" in error_msg.lower():
                         if attempt < settings.retry_attempts - 1:
-                            logger.warning(f"⚠️ Network error for {self.name}, retrying... (attempt {attempt + 1}/{settings.retry_attempts})")
+                            logger.warning(
+                                f"⚠️ Network error for {self.name}, retrying... (attempt {attempt + 1}/{settings.retry_attempts})"
+                            )
                             await asyncio.sleep(settings.retry_delay_seconds)
                             continue
                         logger.warning(f"⚠️ Network error for {self.name}: {error_msg}")
@@ -142,7 +161,7 @@ class BaseDebateAgent(abc.ABC):
                     start_time=start_time,
                     input_text=full_prompt,
                     output_text=response_text,
-                    error=error
+                    error=error,
                 )
 
     @abc.abstractmethod
@@ -158,15 +177,17 @@ class BaseDebateAgent(abc.ABC):
         """
         pass
 
-    def _create_message(self, content: str, msg_type: str, to_agent: Optional[str] = None) -> Dict[str, Any]:
+    def _create_message(
+        self, content: str, msg_type: str, to_agent: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
         Helper to create a standardized message.
-        
+
         Args:
             content: The text content of the message.
             msg_type: The type of message (e.g., "ARGUMENT", "REBUTTAL").
             to_agent: Optional ID of the recipient agent.
-            
+
         Returns:
             A dictionary representing the message.
         """
@@ -177,5 +198,5 @@ class BaseDebateAgent(abc.ABC):
             "to_agent": to_agent,
             "content": content,
             "timestamp": datetime.now().isoformat(),
-            "role": self.role
+            "role": self.role,
         }
