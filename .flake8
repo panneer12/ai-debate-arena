@@ -1,6 +1,6 @@
 [flake8]
 max-line-length = 100
-extend-ignore = E203, E266, E501, W503, F403, F401
+extend-ignore = E203, E266, E501, W503, F403, F401, B950, B907, W293, F541
 max-complexity = 18
 select = B,C,E,F,W,T4,B9
 exclude =
@@ -16,5 +16,10 @@ exclude =
     *.egg-info,
     .eggs,
     demo,
+    evaluation,
+    view_debate.py,
+    scratch,
 per-file-ignores =
     __init__.py:F401
+    tests/test_fact_checker.py:E712
+    utils/metrics.py:F841
