@@ -142,9 +142,11 @@ async def test_fact_checker_with_search_fallback(mock_genai_client):
     # Mock search to raise exception
     checker.client.models.generate_content.side_effect = [
         Exception("Search API failed"),
-        MagicMock(text="""VERDICT: TRUE
+        MagicMock(
+            text="""VERDICT: TRUE
 CONFIDENCE: 0.7
-EVIDENCE: Fallback verification successful.""")
+EVIDENCE: Fallback verification successful."""
+        ),
     ]
 
     # Mock the generate_response method

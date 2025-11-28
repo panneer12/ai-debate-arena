@@ -160,7 +160,9 @@ QUESTION: Test question for {challenge_type}?
 REASONING: Test reasoning."""
         advocate.client.models.generate_content.return_value = mock_response
 
-        result = await advocate.challenge_argument(f"Test argument for {challenge_type}", "TestAgent")
+        result = await advocate.challenge_argument(
+            f"Test argument for {challenge_type}", "TestAgent"
+        )
 
         assert result["challenge_type"] == challenge_type
         assert challenge_type in result["question"]
