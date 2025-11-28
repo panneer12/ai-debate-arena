@@ -114,3 +114,98 @@ WEAKNESSES: Relies too heavily on single source"""
     assert "Progressive" in result["content"]
     assert "60%" in result["content"] or "0.6" in result["content"]
     assert "appeal_to_authority" in result["content"].lower()
+
+
+@pytest.mark.asyncio
+async def test_analysis_parsing_alternative_field_names():
+    """Test parsing with alternative field names."""
+    analyzer = ArgumentAnalyzerAgent()
+
+    response = """LOGICAL STRUCTURE: 0.75
+EVIDENCE QUALITY: 0.8
+FALLACY: circular_reasoning
+STRENGTH: Well-structured
+WEAKNESS: Assumes conclusion"""
+
+    parsed = analyzer._parse_analysis_response(response)
+
+    assert parsed["logical_validity"] == 0.75
+    assert parsed["evidence_quality"] == 0.8
+    assert "circular_reasoning" in parsed["fallacies"]
+    assert "structured" in parsed["strengths"].lower()
+
+
+@pytest.mark.asyncio
+async def test_analysis_parsing_no_fallacies():
+    """Test parsing when fallacies field says 'none'."""
+    analyzer = ArgumentAnalyzerAgent()
+
+    response = """LOGICAL_VALIDITY: 0.9
+EVIDENCE_QUALITY: 0.85
+FALLACIES: none detected
+STRENGTHS: Strong evidence
+WEAKNESSES: Minor gaps"""
+
+    parsed = analyzer._parse_analysis_response(response)
+
+    assert parsed["fallacies"] == []
+
+
+@pytest.mark.asyncio
+async def test_analysis_parsing_invalid_scores():
+    """Test parsing with invalid scores."""
+    analyzer = ArgumentAnalyzerAgent()
+
+    response = """LOGICAL_VALIDITY: invalid
+EVIDENCE_QUALITY: bad_value
+FALLACIES: none
+STRENGTHS: Test
+WEAKNESSES: Test"""
+
+    parsed = analyzer._parse_analysis_response(response)
+
+    # Should use defaults
+    assert parsed["logical_validity"] == 0.5
+    assert parsed["evidence_quality"] == 0.5
+
+
+@pytest.mark.asyncio
+async def test_analysis_parsing_out_of_range_scores():
+    """Test parsing with out of range scores."""
+    analyzer = ArgumentAnalyzerAgent()
+
+    response = """LOGICAL_VALIDITY: 1.5
+EVIDENCE_QUALITY: -0.3
+FALLACIES: none
+STRENGTHS: Test
+WEAKNESSES: Test"""
+
+    parsed = analyzer._parse_analysis_response(response)
+
+    # Should clamp to valid range
+    assert parsed["logical_validity"] == 1.0
+    assert parsed["evidence_quality"] == 0.0
+
+
+@pytest.mark.asyncio
+async def test_process_message_no_fallacies(mock_genai_client):
+    """Test processing message with no fallacies detected."""
+    analyzer = ArgumentAnalyzerAgent()
+
+    mock_response = MagicMock()
+    mock_response.text = """LOGICAL_VALIDITY: 0.9
+EVIDENCE_QUALITY: 0.85
+FALLACIES: none
+STRENGTHS: Clear logic, strong evidence
+WEAKNESSES: Could be more concise"""
+    analyzer.client.models.generate_content.return_value = mock_response
+
+    message = {
+        "from_agent": "Conservative",
+        "content": "Well-reasoned argument with citations",
+        "type": "ARGUMENT",
+    }
+
+    result = await analyzer.process_message(message)
+
+    assert "None detected" in result["content"]

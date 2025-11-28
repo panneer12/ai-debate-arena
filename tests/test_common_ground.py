@@ -82,3 +82,111 @@ ANALYSIS: High alignment."""
     assert parsed["agreed_facts"] == ["Fact 1"]
     assert parsed["convergent_solutions"] == ["Solution 1"]
     assert parsed["agreement_score"] == 80
+
+
+@pytest.mark.asyncio
+async def test_common_ground_parsing_empty_response():
+    """Test parsing empty response."""
+    finder = CommonGroundFinder()
+
+    parsed = finder._parse_common_ground_response("")
+
+    assert parsed["shared_values"] == []
+    assert parsed["agreed_facts"] == []
+    assert parsed["convergent_solutions"] == []
+    assert parsed["agreement_score"] == 0
+    assert parsed["analysis"] == "No response generated"
+
+
+@pytest.mark.asyncio
+async def test_common_ground_parsing_with_asterisks():
+    """Test parsing with asterisk bullet points."""
+    finder = CommonGroundFinder()
+
+    response = """SHARED_VALUES: Safety, Freedom
+AGREED_FACTS:
+* Economic challenges exist
+* Change is needed
+CONVERGENT_SOLUTIONS:
+* Gradual reform
+AGREEMENT_SCORE: 55
+ANALYSIS: Moderate overlap."""
+
+    parsed = finder._parse_common_ground_response(response)
+
+    assert len(parsed["agreed_facts"]) == 2
+    assert "Economic challenges exist" in parsed["agreed_facts"]
+    assert len(parsed["convergent_solutions"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_common_ground_parsing_multiline_analysis():
+    """Test parsing with multiline analysis."""
+    finder = CommonGroundFinder()
+
+    response = """SHARED_VALUES: Justice, Equity
+AGREED_FACTS:
+- Current system has issues
+CONVERGENT_SOLUTIONS:
+- Incremental improvements
+AGREEMENT_SCORE: 70
+ANALYSIS: Both sides acknowledge problems.
+They differ on solutions.
+But share core values."""
+
+    parsed = finder._parse_common_ground_response(response)
+
+    assert "Both sides acknowledge problems" in parsed["analysis"]
+    assert "They differ on solutions" in parsed["analysis"]
+    assert "core values" in parsed["analysis"]
+
+
+@pytest.mark.asyncio
+async def test_common_ground_parsing_score_with_percent():
+    """Test parsing agreement score with percent sign."""
+    finder = CommonGroundFinder()
+
+    response = """SHARED_VALUES: Test
+AGREED_FACTS:
+- Fact
+CONVERGENT_SOLUTIONS:
+- Solution
+AGREEMENT_SCORE: 85%
+ANALYSIS: Good."""
+
+    parsed = finder._parse_common_ground_response(response)
+
+    assert parsed["agreement_score"] == 85
+
+
+@pytest.mark.asyncio
+async def test_common_ground_parsing_invalid_score():
+    """Test parsing with invalid agreement score."""
+    finder = CommonGroundFinder()
+
+    response = """SHARED_VALUES: Test
+AGREEMENT_SCORE: invalid
+ANALYSIS: Test."""
+
+    parsed = finder._parse_common_ground_response(response)
+
+    # Should default to 0
+    assert parsed["agreement_score"] == 0
+
+
+@pytest.mark.asyncio
+async def test_process_message(mock_genai_client):
+    """Test processing a message (common ground finder observes)."""
+    finder = CommonGroundFinder()
+
+    message = {
+        "from_agent": "Progressive",
+        "content": "Test argument",
+        "type": "ARGUMENT",
+    }
+
+    result = await finder.process_message(message)
+
+    assert result["type"] == "SYSTEM"
+    assert "observing" in result["content"].lower()
+    assert result["to_agent"] is None
