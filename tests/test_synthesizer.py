@@ -89,3 +89,114 @@ SUMMARY: Balanced discussion."""
     assert parsed["common_ground"] == ["Agreement 1"]
     assert parsed["takeaways"] == ["Action 1"]
     assert parsed["confidence"] == 0.8
+
+
+@pytest.mark.asyncio
+async def test_synthesis_parsing_multiline_summary():
+    """Test parsing synthesis with multiline summary."""
+    synthesizer = SynthesizerAgent()
+
+    response = """WINNER: Progressive
+KEY_ARGUMENTS:
+- Progressive: Strong point
+- Conservative: Valid concern
+COMMON_GROUND:
+- Both care about outcomes
+TAKEAWAYS:
+- Find middle ground
+CONFIDENCE: 0.75
+SUMMARY: This was a detailed debate.
+Additional summary line here.
+And another line."""
+
+    parsed = synthesizer._parse_synthesis_response(response)
+
+    assert parsed["winner"] == "Progressive"
+    assert "detailed debate" in parsed["summary"]
+    assert "Additional summary" in parsed["summary"]
+    assert parsed["confidence"] == 0.75
+
+
+@pytest.mark.asyncio
+async def test_synthesis_parsing_with_asterisks():
+    """Test parsing synthesis with asterisk bullet points."""
+    synthesizer = SynthesizerAgent()
+
+    response = """WINNER: Draw
+KEY_ARGUMENTS:
+* Side A: First point
+* Side B: Counter point
+COMMON_GROUND:
+* Shared value 1
+* Shared value 2
+TAKEAWAYS:
+* Action item 1
+CONFIDENCE: 0.65
+SUMMARY: Balanced."""
+
+    parsed = synthesizer._parse_synthesis_response(response)
+
+    assert len(parsed["key_arguments"]) == 2
+    assert len(parsed["common_ground"]) == 2
+    assert len(parsed["takeaways"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_synthesis_parsing_invalid_confidence():
+    """Test parsing synthesis with invalid confidence score."""
+    synthesizer = SynthesizerAgent()
+
+    response = """WINNER: Progressive
+KEY_ARGUMENTS:
+- Point 1
+COMMON_GROUND:
+- Agreement
+TAKEAWAYS:
+- Action
+CONFIDENCE: invalid
+SUMMARY: Test."""
+
+    parsed = synthesizer._parse_synthesis_response(response)
+
+    # Should use default confidence of 0.5
+    assert parsed["confidence"] == 0.5
+
+
+@pytest.mark.asyncio
+async def test_synthesis_parsing_out_of_range_confidence():
+    """Test parsing synthesis with out of range confidence score."""
+    synthesizer = SynthesizerAgent()
+
+    # Test confidence > 1.0
+    response1 = """WINNER: Draw
+CONFIDENCE: 1.5
+SUMMARY: Test."""
+
+    parsed1 = synthesizer._parse_synthesis_response(response1)
+    assert parsed1["confidence"] == 1.0  # Clamped to 1.0
+
+    # Test confidence < 0.0
+    response2 = """WINNER: Draw
+CONFIDENCE: -0.5
+SUMMARY: Test."""
+
+    parsed2 = synthesizer._parse_synthesis_response(response2)
+    assert parsed2["confidence"] == 0.0  # Clamped to 0.0
+
+
+@pytest.mark.asyncio
+async def test_process_message(mock_genai_client):
+    """Test processing a message (synthesizer observes)."""
+    synthesizer = SynthesizerAgent()
+
+    message = {
+        "from_agent": "Conservative",
+        "content": "Test argument",
+        "type": "ARGUMENT",
+    }
+
+    result = await synthesizer.process_message(message)
+
+    assert result["type"] == "SYSTEM"
+    assert "observing" in result["content"].lower()
+    assert result["to_agent"] is None
