@@ -2,8 +2,28 @@
 
 **Multi-agent debate system for finding truth through structured conflict**
 
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Powered by Gemini](https://img.shields.io/badge/Powered%20by-Gemini-4285F4)](https://ai.google.dev/)
+
+> 📖 **New here?** Check out [QUICKSTART.md](QUICKSTART.md) for a 5-minute setup guide with automated scripts!
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Quick Start](#quick-start)
+- [Architecture](#architecture)
+- [Features](#features)
+- [Usage Examples](#usage-examples)
+- [Project Structure](#project-structure)
+- [Technology Stack](#technology-stack)
+- [Environment Variables](#environment-variables)
+- [Testing](#testing)
+- [Code Quality & CI/CD](#code-quality--cicd)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
@@ -31,56 +51,35 @@ Multiple specialized AI agents debate complex topics:
 
 ## Quick Start
 
-### Prerequisites
-
-- Python 3.11+
-- Google AI API key ([get one here](https://ai.google.dev/))
-
-### Installation
+**Get started in 3 simple steps:**
 
 ```bash
-# Clone the repository
+# 1. Clone and navigate
 git clone https://github.com/yourusername/ai-debate-arena.git
 cd ai-debate-arena
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+# 2. Run bootstrap (one-time setup)
+./bootstrap.sh           # Linux/Mac/WSL
+bootstrap.bat            # Windows
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Set up environment
-cp .env.example .env
-# Edit .env and add your GOOGLE_API_KEY
+# 3. Configure and start
+# Edit .env with your GOOGLE_API_KEY, then:
+./start-server.sh        # Linux/Mac/WSL
+start-server.bat         # Windows
 ```
 
-### For Developers
+**📖 For detailed setup instructions, see [QUICKSTART.md](QUICKSTART.md)**
 
-If you're contributing to the project, install development dependencies and set up Git hooks:
+### What the Bootstrap Script Does
 
-```bash
-# Install development dependencies
-pip install -r requirements-dev.txt
-
-# Set up Git hooks for automatic code quality checks
-./scripts/setup-hooks.sh
-
-# (Optional) Install pre-commit framework
-pre-commit install
-```
-
-The pre-commit hook will automatically:
-- Format code with **Black** (line length: 100)
-- Sort imports with **isort**
-- Check code quality with **flake8** (PEP 8 compliance)
-- Prevent commits with violations
-
-### Run a Debate
-
-```bash
-python main.py
-```
+Our automated setup script handles everything:
+- ✅ Checks Python 3.10+ installation
+- ✅ Installs `uv` (ultra-fast package manager)
+- ✅ Creates virtual environment
+- ✅ Installs all dependencies
+- ✅ Sets up environment configuration
+- ✅ Configures git hooks for code quality
+- ✅ Installs development tools
 
 ---
 
@@ -117,70 +116,137 @@ python main.py
 
 ### Core Agents
 
-1. **Moderator** - Manages debate flow, enforces protocol
-2. **Conservative Agent** - Traditional values, free market perspective
-3. **Progressive Agent** - Social justice, collective action perspective  
-4. **Fact Checker** - Real-time claim verification via Google Search
-5. **Devil's Advocate** - Challenges all positions, prevents groupthink
-6. **Synthesizer** - Generates nuanced conclusions, finds common ground
+1. **Moderator Agent** (`agents/moderator.py`)
+   - Manages debate flow and enforces protocol
+   - Orchestrates sequential debate phases
+   - Coordinates timing and turn-taking
 
----
+2. **Conservative Agent** (`agents/perspectives/conservative.py`)
+   - Traditional values perspective
+   - Free market economic approach
+   - Individual responsibility focus
 
-## Usage Example
+3. **Progressive Agent** (`agents/perspectives/progressive.py`)
+   - Social justice perspective
+   - Collective action approach
+   - Systemic change focus
 
-```python
-from agents.moderator import ModeratorAgent
-from agents.perspectives import ConservativeAgent, ProgressiveAgent
+4. **Fact Checker Agent** (`agents/evidence/fact_checker.py`)
+   - Real-time claim verification via Google Search
+   - Source credibility scoring
+   - Confidence-weighted verification
 
-# Initialize agents
-moderator = ModeratorAgent()
-conservative = ConservativeAgent()
-progressive = ProgressiveAgent()
+5. **Devil's Advocate Agent** (`agents/evidence/devils_advocate.py`)
+   - Challenges all positions to prevent groupthink
+   - Identifies logical fallacies
+   - Questions assumptions
 
-# Start debate
-result = moderator.start_debate(
-    topic="Should we have universal healthcare?",
-    agents=[conservative, progressive]
-)
-
-# View results
-print(result.synthesis.consensus_points)
-print(result.synthesis.common_ground)
-```
+6. **Synthesizer Agent** (`agents/synthesis/synthesizer.py`)
+   - Generates nuanced conclusions
+   - Finds common ground between perspectives
+   - Identifies consensus points
 
 ---
 
 ## Features
 
-✨ **Multi-Agent Debate System**
-- Parallel agent execution
-- Sequential debate phases
-- Formal argumentation protocols
+### ✨ Multi-Agent Debate System
+- **Parallel agent execution** - Agents process information simultaneously
+- **Sequential debate phases** - Opening statements, rebuttals, cross-examination, closing
+- **Formal argumentation protocols** - Structured debate rules and timing
 
-🔍 **Real-Time Fact Checking**
-- Google Search integration
-- Source credibility scoring
-- Confidence-weighted verification
+### 🔍 Real-Time Fact Checking
+- **Google Search integration** - Automated web search for claim verification
+- **Source credibility scoring** - Evaluates reliability of sources
+- **Confidence-weighted verification** - Assigns confidence levels to fact-checks
 
-🤝 **Common Ground Discovery**
-- Shared value identification
-- Compromise solution generation
-- Nuanced, multi-perspective conclusions
+### 🤝 Common Ground Discovery
+- **Shared value identification** - Finds areas of agreement
+- **Compromise solution generation** - Synthesizes middle-ground positions
+- **Nuanced conclusions** - Avoids binary thinking
 
-📊 **Quality Metrics**
-- Logical validity checking
-- Fallacy detection
-- Argument strength scoring
+### 📊 Quality Metrics
+- **Logical validity checking** - Identifies sound arguments
+- **Fallacy detection** - Catches common logical errors
+- **Argument strength scoring** - Rates persuasiveness
+
+### 🔧 Developer Experience
+- **Automated setup** - Bootstrap script handles everything
+- **Pre-commit hooks** - Automatic code formatting and linting
+- **Comprehensive tests** - Unit and integration test suites
+- **Type safety** - MyPy type checking
+- **CI/CD pipeline** - Automated quality checks
 
 ---
 
-## Technology Stack
+## Usage Examples
 
-- **LLM:** Google Gemini 2.0 Flash
-- **Framework:** Google ADK (Agent Development Kit)
-- **Backend:** FastAPI + WebSockets
-- **Deployment:** Docker + Google Cloud Run
-- **Testing:** pytest
+### Basic Usage (CLI)
+
+```python
+import asyncio
+from agents.moderator import ModeratorAgent
+from agents.perspectives import ConservativeAgent, ProgressiveAgent
+from agents.evidence import FactCheckerAgent, DevilsAdvocateAgent
+from agents.synthesis import SynthesizerAgent
+
+async def main():
+    # Initialize agents
+    moderator = ModeratorAgent()
+    conservative = ConservativeAgent()
+    progressive = ProgressiveAgent()
+    fact_checker = FactCheckerAgent()
+    devils_advocate = DevilsAdvocateAgent()
+    synthesizer = SynthesizerAgent()
+
+    # Start debate
+    result = await moderator.start_debate(
+        topic="Should we have universal healthcare?",
+        debaters=[conservative, progressive],
+        fact_checker=fact_checker,
+        devils_advocate=devils_advocate,
+        synthesizer=synthesizer
+    )
+
+    # View results
+    print("\nCONSENSUS POINTS:")
+    for point in result["synthesis"]["consensus_points"]:
+        print(f"  ✓ {point}")
+
+    print("\nSTRONGEST ARGUMENTS:")
+    for agent, arg in result["synthesis"]["strongest_arguments"].items():
+        print(f"  • {agent}: {arg}")
+
+    print("\nCOMMON GROUND:")
+    print(f"  {result['synthesis']['common_ground']}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+### Running the Application
+
+```bash
+# Using the start script (recommended)
+./start-server.sh        # Linux/Mac
+start-server.bat         # Windows
+
+# Or manually
+source venv/bin/activate  # Windows: venv\Scripts\activate
+python main.py
+```
+
+### Running Demos
+
+```bash
+# Run demo scenario
+./start-server.sh --demo  # Linux/Mac
+start-server.bat demo     # Windows
+
+# Or directly
+python -m demo.run_scenario_a
+python -m demo.quick_scenario
+```
 
 ---
 
@@ -188,31 +254,189 @@ print(result.synthesis.common_ground)
 
 ```
 ai-debate-arena/
-├── agents/              # Agent implementations
-│   ├── perspectives/    # Viewpoint agents
-│   ├── evidence/        # Fact checker, devil's advocate
-│   └── synthesis/       # Analyzer, synthesizer
-├── protocols/           # Message format, debate rules
-├── memory/              # Memory bank, caching
-├── tools/               # Google Search integration
-├── tests/               # Test suites
-├── demo/                # Demo UI and examples
-└── deployment/          # Docker, Cloud Run config
+├── agents/                      # Agent implementations
+│   ├── perspectives/            # Viewpoint agents
+│   │   ├── conservative.py      # Conservative perspective
+│   │   ├── progressive.py       # Progressive perspective
+│   │   └── __init__.py
+│   ├── evidence/                # Evidence verification
+│   │   ├── fact_checker.py      # Fact checking agent
+│   │   ├── devils_advocate.py   # Devil's advocate agent
+│   │   └── __init__.py
+│   ├── synthesis/               # Analysis and synthesis
+│   │   ├── analyzer.py          # Argument analyzer
+│   │   ├── synthesizer.py       # Synthesis agent
+│   │   ├── common_ground.py     # Common ground finder
+│   │   └── __init__.py
+│   └── moderator.py             # Debate orchestration
+│
+├── protocols/                   # Message formats and protocols
+│   ├── debate_protocol.py       # Debate rules and structure
+│   ├── message_types.py         # Message type definitions
+│   └── __init__.py
+│
+├── memory/                      # Memory and caching
+│   ├── memory_bank.py           # Conversation memory
+│   ├── fact_cache.py            # Fact-check cache
+│   └── __init__.py
+│
+├── tools/                       # External integrations
+│   ├── google_search.py         # Google Search integration
+│   └── __init__.py
+│
+├── tests/                       # Test suites
+│   ├── unit/                    # Unit tests (with mocks)
+│   ├── integration/             # Integration tests (real API)
+│   ├── test_perspectives.py
+│   ├── test_fact_checker.py
+│   └── conftest.py
+│
+├── demo/                        # Demo scenarios
+│   ├── run_scenario_a.py        # Full debate scenario
+│   ├── quick_scenario.py        # Quick demo
+│   └── __init__.py
+│
+├── deployment/                  # Deployment configuration
+│   ├── Dockerfile               # Docker image
+│   ├── deploy.sh                # Deployment script
+│   ├── setup-secrets.sh         # Secrets setup
+│   └── DEPLOYMENT_GUIDE.md      # Deployment guide
+│
+├── scripts/                     # Utility scripts
+│   └── setup-hooks.sh           # Git hooks setup
+│
+├── main.py                      # Main entry point
+├── config.py                    # Configuration settings
+├── bootstrap.sh                 # Setup script (Linux/Mac)
+├── bootstrap.bat                # Setup script (Windows)
+├── start-server.sh              # Start script (Linux/Mac)
+├── start-server.bat             # Start script (Windows)
+├── requirements.txt             # Python dependencies
+├── requirements-dev.txt         # Development dependencies
+├── pyproject.toml               # Project configuration
+├── .env.example                 # Environment template
+├── .flake8                      # Flake8 configuration
+├── README.md                    # This file
+├── QUICKSTART.md                # Quick setup guide
+└── CONTRIBUTING.md              # Contribution guidelines
 ```
+
+---
+
+## Technology Stack
+
+- **LLM:** Google Gemini (2.5 Flash / 1.5 Flash)
+- **Framework:** Google ADK (Agent Development Kit)
+- **Backend:** FastAPI + WebSockets
+- **Data Validation:** Pydantic + Pydantic Settings
+- **Testing:** pytest, pytest-asyncio, pytest-cov
+- **Code Quality:** Black, isort, flake8, mypy
+- **Package Management:** uv (ultra-fast Rust-based installer)
+- **Deployment:** Docker + Google Cloud Run
+- **CI/CD:** GitHub Actions
+
+---
+
+## Environment Variables
+
+Configuration is managed through the `.env` file. Copy `.env.example` to `.env` and configure:
+
+### Required Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `GOOGLE_API_KEY` | Google AI API key ([Get here](https://ai.google.dev/)) | `AIza...` |
+
+### Optional Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| **LLM Configuration** | | |
+| `LLM_MODEL` | Primary Gemini model | `gemini-2.5-flash-lite` |
+| `LLM_FALLBACK_MODEL` | Fallback model if primary fails | `gemini-2.5-flash` |
+| `LLM_TEMPERATURE` | Model temperature (0.0-1.0) | `0.7` |
+| `LLM_MAX_TOKENS` | Max tokens per response | `1024` |
+| **Debate Configuration** | | |
+| `MAX_DEBATE_ROUNDS` | Maximum debate rounds | `5` |
+| `OPENING_STATEMENT_SECONDS` | Time for opening statements | `120` |
+| `REBUTTAL_SECONDS` | Time for rebuttals | `60` |
+| `CLOSING_SECONDS` | Time for closing statements | `90` |
+| **Performance** | | |
+| `AGENT_TIMEOUT_SECONDS` | Agent response timeout | `30` |
+| `FACT_CHECK_TIMEOUT_SECONDS` | Fact check timeout | `10` |
+| `AGENT_DELAY_SECONDS` | Delay between agent calls | `1.0` |
+| `RETRY_ATTEMPTS` | Number of retry attempts | `3` |
+| `RETRY_DELAY_SECONDS` | Delay between retries | `2.0` |
+| **Logging** | | |
+| `LOG_LEVEL` | Logging level (DEBUG, INFO, WARNING, ERROR) | `INFO` |
+| `LOG_FORMAT` | Log format style | `detailed` |
+| **Server** | | |
+| `PORT` | Server port (auto-set by Cloud Run) | `8080` |
+| `HOST` | Server host | `0.0.0.0` |
+| **Caching** | | |
+| `ENABLE_FACT_CACHE` | Enable fact-check caching | `True` |
+| `FACT_CACHE_TTL_DAYS` | Fact cache time-to-live | `7` |
+| **Google Search (Optional)** | | |
+| `GOOGLE_SEARCH_API_KEY` | Google Custom Search API key | - |
+| `GOOGLE_SEARCH_ENGINE_ID` | Google Custom Search Engine ID | - |
+
+See `.env.example` for the complete list with descriptions.
 
 ---
 
 ## Testing
 
+### Running Tests
+
 ```bash
+# Activate virtual environment
+source venv/bin/activate      # Linux/Mac
+venv\Scripts\activate.bat     # Windows
+
 # Run all tests
 pytest
 
-# Run with coverage
-pytest --cov=agents --cov-report=html
+# Run only unit tests (fast, no API calls)
+pytest -m unit
 
-# Run specific tests
+# Run only integration tests (requires GOOGLE_API_KEY)
+pytest -m integration
+
+# Run with coverage report
+pytest --cov=agents --cov=protocols --cov=tools --cov=utils --cov=memory
+
+# Generate HTML coverage report
+pytest --cov-report=html
+# Open htmlcov/index.html in browser
+
+# Run specific test file
 pytest tests/test_perspectives.py -v
+
+# Run with verbose output
+pytest -vv
+```
+
+### Test Categories
+
+- **Unit tests** (`-m unit`): Fast tests with mocks, no external API calls
+- **Integration tests** (`-m integration`): Real API calls, requires `GOOGLE_API_KEY`
+- **Coverage threshold**: 80% minimum (enforced by CI/CD)
+
+### Test Configuration
+
+Tests are configured in `pyproject.toml`:
+
+```toml
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+markers = [
+    "unit: Fast unit tests with mocks",
+    "integration: Integration tests with real API calls",
+]
 ```
 
 ---
@@ -239,12 +463,12 @@ The project uses GitHub Actions to automatically check code quality on every pus
 The project includes Git hooks that run automatically before each commit:
 
 ```bash
-# Set up hooks (one-time setup)
+# Set up hooks (one-time setup, done by bootstrap script)
 ./scripts/setup-hooks.sh
 ```
 
 This configures Git to:
-1. Auto-format code with **Black**
+1. Auto-format code with **Black** (line length: 100)
 2. Auto-sort imports with **isort**
 3. Check for PEP 8 violations with **flake8**
 4. Prevent commits with code quality issues
@@ -285,28 +509,67 @@ All tools are configured in `pyproject.toml` and `.flake8`:
 ### Docker
 
 ```bash
+# Build image
 docker build -t ai-debate-arena .
+
+# Run container
 docker run -p 8080:8080 -e GOOGLE_API_KEY=your_key ai-debate-arena
 ```
 
 ### Google Cloud Run
 
 ```bash
+# Deploy to Cloud Run
 gcloud run deploy ai-debate-arena \
   --source . \
   --set-env-vars GOOGLE_API_KEY=your_key
+
+# Or use secrets (recommended for production)
+gcloud run deploy ai-debate-arena \
+  --source . \
+  --set-secrets GOOGLE_API_KEY=google-api-key:latest
 ```
+
+**📖 For detailed deployment instructions, see [deployment/DEPLOYMENT_GUIDE.md](deployment/DEPLOYMENT_GUIDE.md)**
 
 ---
 
 ## Contributing
 
-Contributions welcome! Areas for improvement:
-- Additional perspective agents (Libertarian, International, etc.)
-- Enhanced fact-checking sources
-- UI improvements
-- Performance optimizations
-- Multi-language support
+Contributions are welcome! We'd love your help improving the AI Debate Arena.
+
+### Areas for Contribution
+
+- 🤖 **Additional perspective agents** (Libertarian, International, Economist, etc.)
+- 🔍 **Enhanced fact-checking sources** (multiple search engines, academic databases)
+- 🎨 **UI improvements** (web interface, visualization)
+- ⚡ **Performance optimizations** (caching, parallel processing)
+- 🌍 **Multi-language support** (debate in different languages)
+- 📊 **Analytics and metrics** (debate quality scoring)
+- 🧪 **Testing** (more test coverage, edge cases)
+
+### Development Workflow
+
+1. **Fork the repository** and clone your fork
+2. **Run the bootstrap script** to set up your environment
+3. **Create a branch** for your feature: `git checkout -b feature/my-feature`
+4. **Make your changes** and write tests
+5. **Run tests**: `pytest`
+6. **Check code quality**: `black . && isort . && flake8 .`
+7. **Commit your changes**: `git commit -m "Add my feature"`
+8. **Push to your fork**: `git push origin feature/my-feature`
+9. **Create a Pull Request** from your fork to the main repository
+
+**📖 For detailed contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md)**
+
+### Code Standards
+
+- Follow PEP 8 style guide (enforced by flake8)
+- Use Black for code formatting (line length: 100)
+- Write docstrings for all public functions/classes
+- Add type hints where appropriate
+- Write tests for new features
+- Maintain 80%+ test coverage
 
 ---
 
@@ -318,7 +581,21 @@ MIT License - see [LICENSE](LICENSE) for details
 
 ## Acknowledgments
 
-Built with [Google Agent Development Kit](https://ai.google.dev/) and [Gemini](https://ai.google.dev/gemini-api).
+Built with:
+- [Google Agent Development Kit (ADK)](https://ai.google.dev/)
+- [Gemini API](https://ai.google.dev/gemini-api)
+- [uv - Ultra-fast Python package installer](https://github.com/astral-sh/uv)
+
+Special thanks to the open-source community for the amazing tools and libraries that make this project possible.
+
+---
+
+## Contact & Support
+
+- 📖 **Documentation**: [QUICKSTART.md](QUICKSTART.md) | [CONTRIBUTING.md](CONTRIBUTING.md)
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/yourusername/ai-debate-arena/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/yourusername/ai-debate-arena/discussions)
+- 🚀 **Deployment Help**: [deployment/DEPLOYMENT_GUIDE.md](deployment/DEPLOYMENT_GUIDE.md)
 
 ---
 
