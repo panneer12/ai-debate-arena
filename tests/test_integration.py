@@ -105,7 +105,9 @@ async def test_synthesis_in_memory():
     await manager.initialize_agents()
 
     task = asyncio.create_task(
-        manager.start_debate(topic="Test synthesis", rounds=1, active_agents=["conservative", "progressive"])
+        manager.start_debate(
+            topic="Test synthesis", rounds=1, active_agents=["conservative", "progressive"]
+        )
     )
 
     await asyncio.sleep(30)
@@ -135,7 +137,9 @@ async def test_fact_checker_runs():
     await manager.initialize_agents()
 
     task = asyncio.create_task(
-        manager.start_debate(topic="Climate change is real", rounds=1, active_agents=["conservative", "progressive"])
+        manager.start_debate(
+            topic="Climate change is real", rounds=1, active_agents=["conservative", "progressive"]
+        )
     )
 
     await asyncio.sleep(30)

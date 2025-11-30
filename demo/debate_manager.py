@@ -277,13 +277,16 @@ class DebateManager:
             return
 
         # Get the last 2 arguments (both agents from this round)
-        recent_args = [msg for msg in history[-2:] if msg.type in ["ARGUMENT", "REBUTTAL", "OPENING_STATEMENT"]]
-        
+        recent_args = [
+            msg for msg in history[-2:] if msg.type in ["ARGUMENT", "REBUTTAL", "OPENING_STATEMENT"]
+        ]
+
         if not recent_args:
             return
 
         # Pick ONE random argument to challenge per round
         import random
+
         msg = random.choice(recent_args)
 
         try:
@@ -292,7 +295,9 @@ class DebateManager:
                 da_msg = {
                     "type": "CHALLENGE",
                     "from_agent": self.devils_advocate.name,
-                    "content": da_res.get("question", da_res.get("challenge", "Challenge unavailable")),
+                    "content": da_res.get(
+                        "question", da_res.get("challenge", "Challenge unavailable")
+                    ),
                     "challenge_type": da_res.get("challenge_type", "unknown"),
                 }
                 await self.broadcast(da_msg)

@@ -65,3 +65,6 @@ deployment/
 # Docker files (local only for now)
 .dockerignore
 Dockerfile
+
+# Kaggle submission (draft, not for public repo)
+KAGGLE_SUBMISSION.md
