@@ -303,8 +303,20 @@ class DebateApp {
             }
         } catch (error) {
             console.error('Failed to start debate:', error);
-            Utils.showToast('Failed to start debate', 'error');
+
+            // Reset UI state
+            debateManager.isActive = false;
+            debateManager.clearMessages();
             this.setDebateControlsState(false);
+            this.updateStatus('ready', 'Ready');
+
+            // Show error in dialog if message is long, otherwise use toast
+            const errorMessage = error.message || 'Failed to start debate';
+            if (errorMessage.length > 100) {
+                Utils.showErrorDialog('Failed to Start Debate', errorMessage);
+            } else {
+                Utils.showToast(errorMessage, 'error', 5000);
+            }
         }
     }
 

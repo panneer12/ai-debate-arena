@@ -150,6 +150,53 @@ const Utils = {
     },
 
     /**
+     * Show error dialog for long error messages
+     * @param {string} title - Dialog title
+     * @param {string} message - Error message
+     */
+    showErrorDialog(title, message) {
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.style.display = 'flex';
+
+        // Create dialog
+        const dialog = document.createElement('div');
+        dialog.className = 'error-dialog';
+        dialog.innerHTML = `
+            <div class="error-dialog-header">
+                <h3>❌ ${this.escapeHtml(title)}</h3>
+                <button class="close-btn" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+            </div>
+            <div class="error-dialog-content">
+                <p>${this.escapeHtml(message)}</p>
+            </div>
+            <div class="error-dialog-footer">
+                <button class="btn-primary" onclick="this.closest('.modal-overlay').remove()">OK</button>
+            </div>
+        `;
+
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+
+        // Close on overlay click
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                overlay.remove();
+            }
+        });
+
+        // Close on Escape key
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                overlay.remove();
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+    },
+
+    /**
      * Copy text to clipboard
      * @param {string} text - Text to copy
      * @returns {Promise<boolean>} Success status
