@@ -3,9 +3,11 @@ Integration tests for AI Debate Arena.
 Tests the full debate flow end-to-end.
 """
 
-import os
-import pytest
 import asyncio
+import os
+
+import pytest
+
 from demo.debate_manager import DebateManager
 
 # Check if we have a valid API key
@@ -39,7 +41,7 @@ async def test_full_debate_flow():
     await manager.initialize_agents()
 
     # Start debate
-    task = asyncio.create_task(
+    _ = asyncio.create_task(
         manager.start_debate(
             topic="Should we test debates?", rounds=1, active_agents=["conservative", "progressive"]
         )
@@ -82,7 +84,7 @@ async def test_devils_advocate_frequency():
     manager = DebateManager(broadcast_func=mock_broadcast)
     await manager.initialize_agents()
 
-    task = asyncio.create_task(
+    _ = asyncio.create_task(
         manager.start_debate(
             topic="Test topic", rounds=2, active_agents=["conservative", "progressive"]
         )
@@ -110,7 +112,7 @@ async def test_synthesis_in_memory():
     manager = DebateManager(broadcast_func=mock_broadcast)
     await manager.initialize_agents()
 
-    task = asyncio.create_task(
+    _ = asyncio.create_task(
         manager.start_debate(
             topic="Test synthesis", rounds=1, active_agents=["conservative", "progressive"]
         )
@@ -142,7 +144,7 @@ async def test_fact_checker_runs():
     manager = DebateManager(broadcast_func=mock_broadcast)
     await manager.initialize_agents()
 
-    task = asyncio.create_task(
+    _ = asyncio.create_task(
         manager.start_debate(
             topic="Climate change is real", rounds=1, active_agents=["conservative", "progressive"]
         )
@@ -168,7 +170,7 @@ async def test_debate_stop():
     manager = DebateManager(broadcast_func=mock_broadcast)
     await manager.initialize_agents()
 
-    task = asyncio.create_task(
+    _ = asyncio.create_task(
         manager.start_debate(
             topic="Test stop", rounds=5, active_agents=["conservative", "progressive"]
         )
@@ -198,7 +200,7 @@ async def test_debate_saves_metrics():
     manager = DebateManager(broadcast_func=mock_broadcast)
     await manager.initialize_agents()
 
-    task = asyncio.create_task(
+    _ = asyncio.create_task(
         manager.start_debate(
             topic="Test metrics", rounds=1, active_agents=["conservative", "progressive"]
         )
