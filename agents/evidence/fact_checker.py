@@ -84,6 +84,10 @@ SOURCES: [list]"""
         Returns:
             Tuple of (verdict, confidence, explanation)
         """
+        if not response:
+            logger.error("_parse_fact_check_response: Received None/empty response")
+            return "UNVERIFIABLE", 0.5, "Unable to verify - API error"
+
         lines = response.strip().split("\n")
         verdict = "UNVERIFIABLE"
         confidence = 0.5

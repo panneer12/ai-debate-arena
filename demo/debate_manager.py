@@ -149,7 +149,7 @@ class DebateManager:
             await asyncio.sleep(0)  # Yield to event loop
 
             # 1. Conservative Turn
-            await self._handle_turn(self.conservative, round_num)
+            await self._handle_turn(self.conservative, round_num, run_devil_advocate=False)
             if self.should_stop:
                 break
 
@@ -157,9 +157,12 @@ class DebateManager:
             await asyncio.sleep(settings.agent_delay_seconds)
 
             # 2. Progressive Turn
-            await self._handle_turn(self.progressive, round_num)
+            await self._handle_turn(self.progressive, round_num, run_devil_advocate=False)
             if self.should_stop:
                 break
+
+            # Run Devil's Advocate ONCE per round (after both agents)
+            await self._run_devils_advocate_round()
 
             # Delay before next round
             await asyncio.sleep(settings.agent_delay_seconds)
@@ -175,7 +178,7 @@ class DebateManager:
 
         await self.broadcast({"type": "SYSTEM", "content": f"Debate saved to {saved_path}"})
 
-    async def _handle_turn(self, agent, round_num):
+    async def _handle_turn(self, agent, round_num, run_devil_advocate=True):
         """Handle a single agent's turn including analysis."""
         history = self.memory.get_full_history()
 
@@ -223,38 +226,75 @@ class DebateManager:
         await asyncio.sleep(0)  # Yield to event loop
 
         # Parallel Analysis (only for valid messages)
-        await self._run_analysis(msg)
+        await self._run_analysis(msg, run_devil_advocate=run_devil_advocate)
 
-    async def _run_analysis(self, message: DebateMessage):
+    async def _run_analysis(self, message: DebateMessage, run_devil_advocate=True):
         """Run Fact Checker, Devil's Advocate, and Analyzer in parallel."""
         # We don't want analysis to block the flow too much, but for now we await it
         # to ensure the UI gets updates in order.
 
         # 1. Fact Check
-        fc_res = await self.fact_checker.check_claim(message.content)
-        if fc_res["verdict"] != "TRUE":
-            fc_msg = {
-                "type": "FACT_CHECK",
-                "from_agent": self.fact_checker.name,
-                "content": fc_res["explanation"],
-                "claim": message.content[:100] + "...",
-                "verdict": fc_res["verdict"],
-            }
-            await self.broadcast(fc_msg)
-            await asyncio.sleep(0)  # Yield to event loop
+        try:
+            fc_res = await self.fact_checker.check_claim(message.content)
+            if fc_res["verdict"] != "TRUE":
+                fc_msg = {
+                    "type": "FACT_CHECK",
+                    "from_agent": self.fact_checker.name,
+                    "content": fc_res["explanation"],
+                    "claim": message.content[:100] + "...",
+                    "verdict": fc_res["verdict"],
+                }
+                await self.broadcast(fc_msg)
+                await asyncio.sleep(0)  # Yield to event loop
+        except Exception as e:
+            logger.error(f"❌ Fact Checker analysis error: {e}", exc_info=True)
 
-        # 2. Devil's Advocate
-        da_res = await self.devils_advocate.challenge_argument(message.content, message.from_agent)
-        if da_res:
-            # Devil's Advocate returns 'question', not 'challenge'
-            da_msg = {
-                "type": "CHALLENGE",
-                "from_agent": self.devils_advocate.name,
-                "content": da_res.get("question", da_res.get("challenge", "Challenge unavailable")),
-                "challenge_type": da_res.get("challenge_type", "unknown"),
-            }
-            await self.broadcast(da_msg)
-            await asyncio.sleep(0)  # Yield to event loop
+        # 2. Devil's Advocate (only if enabled for this turn)
+        if run_devil_advocate:
+            try:
+                da_res = await self.devils_advocate.challenge_argument(message.content, message.from_agent)
+                if da_res:
+                    # Devil's Advocate returns 'question', not 'challenge'
+                    da_msg = {
+                        "type": "CHALLENGE",
+                        "from_agent": self.devils_advocate.name,
+                        "content": da_res.get("question", da_res.get("challenge", "Challenge unavailable")),
+                        "challenge_type": da_res.get("challenge_type", "unknown"),
+                    }
+                    await self.broadcast(da_msg)
+                    await asyncio.sleep(0)  # Yield to event loop
+            except Exception as e:
+                logger.error(f"❌ Devil's Advocate challenge error: {e}", exc_info=True)
+
+    async def _run_devils_advocate_round(self):
+        """Run Devil's Advocate once per round on one random message."""
+        history = self.memory.get_full_history()
+        if len(history) < 2:
+            return
+
+        # Get the last 2 arguments (both agents from this round)
+        recent_args = [msg for msg in history[-2:] if msg.type in ["ARGUMENT", "REBUTTAL", "OPENING_STATEMENT"]]
+        
+        if not recent_args:
+            return
+
+        # Pick ONE random argument to challenge per round
+        import random
+        msg = random.choice(recent_args)
+
+        try:
+            da_res = await self.devils_advocate.challenge_argument(msg.content, msg.from_agent)
+            if da_res:
+                da_msg = {
+                    "type": "CHALLENGE",
+                    "from_agent": self.devils_advocate.name,
+                    "content": da_res.get("question", da_res.get("challenge", "Challenge unavailable")),
+                    "challenge_type": da_res.get("challenge_type", "unknown"),
+                }
+                await self.broadcast(da_msg)
+                await asyncio.sleep(0)
+        except Exception as e:
+            logger.error(f"❌ Devil's Advocate round challenge error: {e}", exc_info=True)
 
     async def _run_synthesis(self, topic: str):
         """Run synthesis phase."""
@@ -267,6 +307,26 @@ class DebateManager:
 
         # Final Synthesis
         synth_result = await self.synthesizer.synthesize_debate(history, topic)
+
+        # Create synthesis message and add to memory
+        from protocols.message_format import DebateMessage, MessageType
+
+        synthesis_content = f"""## Common Ground
+{cg_result.get('summary', 'No common ground identified.')}
+
+## Key Arguments
+{', '.join(synth_result.get('key_arguments', []))}
+
+## Final Synthesis
+{synth_result.get('summary', 'No synthesis available.')}"""
+
+        synthesis_msg = DebateMessage(
+            from_agent="Synthesizer",
+            role="Synthesizer",
+            content=synthesis_content,
+            type=MessageType.SYNTHESIS,
+        )
+        self.memory.add_message(synthesis_msg)
 
         # Broadcast Synthesis Result
         await self.broadcast(

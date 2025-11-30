@@ -90,7 +90,11 @@ class DebateManager {
             }
         } catch (error) {
             console.error('Failed to start debate:', error);
-            Utils.showToast(error.message || 'Failed to start debate', 'error');
+
+            // Reset state on error
+            this.isActive = false;
+            this.clearMessages();
+
             throw error;
         }
     }
@@ -99,12 +103,18 @@ class DebateManager {
      * Stop ongoing debate
      */
     async stopDebate() {
-        if (!this.isActive || !this.debateId) {
+        if (!this.isActive) {
+            console.log('No active debate to stop');
             return;
         }
 
         try {
             console.log('Stopping debate:', this.debateId);
+
+            // Call backend API to stop debate
+            if (this.debateId) {
+                await debateAPI.stopDebate(this.debateId);
+            }
 
             // Stop voice
             if (typeof voiceManager !== 'undefined') {

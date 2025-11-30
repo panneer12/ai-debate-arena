@@ -70,6 +70,16 @@ SUMMARY: [Brief narrative summary of the debate outcome]"""
         Returns:
             Dictionary with parsed synthesis fields.
         """
+        if not response:
+            return {
+                "winner": "Draw",
+                "key_arguments": [],
+                "common_ground": [],
+                "takeaways": [],
+                "confidence": 0.5,
+                "summary": "No response generated",
+            }
+
         lines = response.strip().split("\n")
 
         result = {

@@ -120,8 +120,10 @@ class DebateApp {
 
             if (data.status === 'running') {
                 this.updateStatus('running', 'Debate Running');
+                debateManager.isActive = true;
             } else if (data.status === 'stopped') {
                 this.updateStatus('ready', 'Ready');
+                debateManager.isActive = false;
                 this.setDebateControlsState(false);
             } else if (data.status === 'synthesizing') {
                 this.updateStatus('running', 'Synthesizing Results...');
@@ -139,6 +141,7 @@ class DebateApp {
                 insights: data.synthesis?.summary || 'No insights available.'
             };
 
+            // Show modal popup (message already added by backend via WebSocket)
             debateManager.showSynthesis(synthesis);
         });
 
@@ -301,8 +304,20 @@ class DebateApp {
             }
         } catch (error) {
             console.error('Failed to start debate:', error);
-            Utils.showToast('Failed to start debate', 'error');
+
+            // Reset UI state
+            debateManager.isActive = false;
+            debateManager.clearMessages();
             this.setDebateControlsState(false);
+            this.updateStatus('ready', 'Ready');
+
+            // Show error in dialog if message is long, otherwise use toast
+            const errorMessage = error.message || 'Failed to start debate';
+            if (errorMessage.length > 100) {
+                Utils.showErrorDialog('Failed to Start Debate', errorMessage);
+            } else {
+                Utils.showToast(errorMessage, 'error', 5000);
+            }
         }
     }
 
@@ -588,9 +603,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Handle page visibility changes
 document.addEventListener('visibilitychange', () => {
-    if (document.hidden && voiceManager) {
-        // Pause voice when tab is hidden
-        voiceManager.pause();
+    if (voiceManager) {
+        if (document.hidden) {
+            // Pause voice when tab is hidden
+            voiceManager.pause();
+        } else {
+            // Resume voice when tab becomes visible again
+            voiceManager.resume();
+        }
     }
 });
 

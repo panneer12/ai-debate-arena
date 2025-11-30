@@ -63,7 +63,7 @@ class BaseDebateAgent(abc.ABC):
 
         # Add word limit instruction to keep responses concise
         word_limit_instruction = (
-            "\n\nIMPORTANT: Keep your response concise and focused. Aim for 200-300 words maximum."
+            "\n\nIMPORTANT: Keep your response concise and focused. Aim for 150 words maximum."
         )
         full_prompt = f"{context}\n\n{prompt}{word_limit_instruction}"
 
@@ -80,9 +80,39 @@ class BaseDebateAgent(abc.ABC):
                         config=types.GenerateContentConfig(
                             temperature=settings.llm_temperature,
                             max_output_tokens=settings.llm_max_tokens,
+                            safety_settings=[
+                                types.SafetySetting(
+                                    category="HARM_CATEGORY_HATE_SPEECH",
+                                    threshold="BLOCK_ONLY_HIGH",
+                                ),
+                                types.SafetySetting(
+                                    category="HARM_CATEGORY_HARASSMENT",
+                                    threshold="BLOCK_ONLY_HIGH",
+                                ),
+                                types.SafetySetting(
+                                    category="HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                                    threshold="BLOCK_ONLY_HIGH",
+                                ),
+                                types.SafetySetting(
+                                    category="HARM_CATEGORY_DANGEROUS_CONTENT",
+                                    threshold="BLOCK_ONLY_HIGH",
+                                ),
+                            ],
                         ),
                     )
                     response_text = response.text
+
+                    # Check if response is None or empty
+                    if not response_text:
+                        logger.warning(
+                            f"⚠️ {self.name} received empty response.text from API (attempt {attempt + 1}/{settings.retry_attempts})"
+                        )
+                        if attempt < settings.retry_attempts - 1:
+                            await asyncio.sleep(settings.retry_delay_seconds)
+                            continue
+                        logger.error(f"❌ {self.name} failed to get valid response after all retries")
+                        return f"[{self.name} - No response received from API]"
+
                     return response_text
 
                 except Exception as e:
@@ -114,6 +144,24 @@ class BaseDebateAgent(abc.ABC):
                                     config=types.GenerateContentConfig(
                                         temperature=settings.llm_temperature,
                                         max_output_tokens=settings.llm_max_tokens,
+                                        safety_settings=[
+                                            types.SafetySetting(
+                                                category="HARM_CATEGORY_HATE_SPEECH",
+                                                threshold="BLOCK_ONLY_HIGH",
+                                            ),
+                                            types.SafetySetting(
+                                                category="HARM_CATEGORY_HARASSMENT",
+                                                threshold="BLOCK_ONLY_HIGH",
+                                            ),
+                                            types.SafetySetting(
+                                                category="HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                                                threshold="BLOCK_ONLY_HIGH",
+                                            ),
+                                            types.SafetySetting(
+                                                category="HARM_CATEGORY_DANGEROUS_CONTENT",
+                                                threshold="BLOCK_ONLY_HIGH",
+                                            ),
+                                        ],
                                     ),
                                 )
                                 response_text = response.text
