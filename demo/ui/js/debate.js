@@ -182,8 +182,8 @@ class DebateManager {
         // Update stats display
         this.updateStats();
 
-        // Speak message if voice enabled
-        if (typeof voiceManager !== 'undefined' && voiceManager.enabled) {
+        // Speak message if voice enabled AND debate is still active
+        if (this.isActive && typeof voiceManager !== 'undefined' && voiceManager.enabled) {
             voiceManager.speak(message.content, message.from_agent, null, message.id);
         }
     }
