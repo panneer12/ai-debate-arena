@@ -97,6 +97,15 @@ WEAKNESSES: [brief list]"""
         Returns:
             Dictionary with parsed analysis fields.
         """
+        if not response:
+            return {
+                "logical_validity": 0.5,
+                "evidence_quality": 0.5,
+                "fallacies": [],
+                "strengths": "No response generated",
+                "weaknesses": "No response generated",
+            }
+
         lines = response.strip().split("\n")
 
         result = {

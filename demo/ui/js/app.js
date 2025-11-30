@@ -120,8 +120,10 @@ class DebateApp {
 
             if (data.status === 'running') {
                 this.updateStatus('running', 'Debate Running');
+                debateManager.isActive = true;
             } else if (data.status === 'stopped') {
                 this.updateStatus('ready', 'Ready');
+                debateManager.isActive = false;
                 this.setDebateControlsState(false);
             } else if (data.status === 'synthesizing') {
                 this.updateStatus('running', 'Synthesizing Results...');
@@ -588,9 +590,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Handle page visibility changes
 document.addEventListener('visibilitychange', () => {
-    if (document.hidden && voiceManager) {
-        // Pause voice when tab is hidden
-        voiceManager.pause();
+    if (voiceManager) {
+        if (document.hidden) {
+            // Pause voice when tab is hidden
+            voiceManager.pause();
+        } else {
+            // Resume voice when tab becomes visible again
+            voiceManager.resume();
+        }
     }
 });
 
