@@ -47,7 +47,8 @@ data/outputs/
 
 # Internal documentation (not for public repo)
 docs/internal/
-docs/
+docs/*
+!docs/images/
 
 # Scratch/temporary files
 scratch/
