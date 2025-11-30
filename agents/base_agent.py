@@ -63,7 +63,7 @@ class BaseDebateAgent(abc.ABC):
 
         # Add word limit instruction to keep responses concise
         word_limit_instruction = (
-            "\n\nIMPORTANT: Keep your response concise and focused. Aim for 200-300 words maximum."
+            "\n\nIMPORTANT: Keep your response concise and focused. Aim for 150 words maximum."
         )
         full_prompt = f"{context}\n\n{prompt}{word_limit_instruction}"
 
