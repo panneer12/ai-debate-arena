@@ -368,8 +368,23 @@ class DebateApp {
         const topicInput = document.getElementById('topicInput');
         const roundsInput = document.getElementById('roundsInput');
 
-        if (startBtn) startBtn.disabled = debateActive;
-        if (stopBtn) stopBtn.disabled = !debateActive;
+        if (startBtn) {
+            startBtn.disabled = debateActive;
+            // Keep primary class but it will be faded when disabled
+        }
+
+        if (stopBtn) {
+            stopBtn.disabled = !debateActive;
+            // Change to danger (red) when active, secondary when inactive
+            if (debateActive) {
+                stopBtn.classList.remove('btn-secondary');
+                stopBtn.classList.add('btn-danger');
+            } else {
+                stopBtn.classList.remove('btn-danger');
+                stopBtn.classList.add('btn-secondary');
+            }
+        }
+
         if (topicInput) topicInput.disabled = debateActive;
         if (roundsInput) roundsInput.disabled = debateActive;
 
