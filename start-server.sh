@@ -194,6 +194,11 @@ else
     # Check if we should run the FastAPI server or CLI
     if [ -f "demo/server.py" ]; then
         echo "Starting FastAPI server..."
+        echo ""
+        echo -e "${GREEN}🌐 Server will be available at:${NC}"
+        echo -e "${BLUE}   http://localhost:${PORT:-8080}${NC}"
+        echo -e "${BLUE}   http://127.0.0.1:${PORT:-8080}${NC}"
+        echo ""
         $VENV_PYTHON -m uvicorn demo.server:app --host ${HOST:-0.0.0.0} --port ${PORT:-8080} --reload
     elif [ -f "server.py" ]; then
         echo "Starting FastAPI server..."
