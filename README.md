@@ -2,324 +2,238 @@
 
 **Multi-agent debate system for finding truth through structured conflict**
 
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Powered by Gemini](https://img.shields.io/badge/Powered%20by-Gemini-4285F4)](https://ai.google.dev/)
+
+📹 **Watch Demo Video** | **[Full Documentation](DETAILED_DOCS.md)** | **[Quick Start Guide](QUICKSTART.md)**
 
 ---
 
-## Overview
+## Problem Statement
 
-The **AI Debate Arena** is a multi-agent AI system where specialized agents engage in formal debates on controversial topics. Through adversarial discourse, real-time fact-checking, and synthesis, the system surfaces multiple perspectives and finds common ground.
+Modern society faces a critical information crisis. **68% of Americans** are trapped in echo chambers, while misinformation spreads **6x faster** than truth. Political polarization is at record highs, and single-perspective AI systems reinforce biases instead of challenging them.
 
-### The Problem
+Traditional AI assistants provide one viewpoint—lacking the adversarial verification that makes human discourse valuable. **We need AI that debates itself to find truth.**
 
-- 68% of Americans trapped in information echo chambers
-- Misinformation spreads 6x faster than truth
-- Political polarization at record highs
-- Single-perspective AI reinforces existing biases
+---
 
-### The Solution
+## Solution: Multi-Agent Adversarial Discourse
 
-Multiple specialized AI agents debate complex topics:
-- **Perspective Agents** argue different viewpoints (Conservative, Progressive, etc.)
-- **Fact Checker** verifies claims in real-time using Google Search
-- **Devil's Advocate** challenges all positions to prevent groupthink
-- **Moderator** orchestrates formal debate structure
-- **Synthesizer** generates nuanced conclusions with common ground
+The **AI Debate Arena** deploys specialized AI agents that engage in formal debates to surface multiple perspectives and find common ground through structured conflict.
+
+### Why Agents?
+
+Agents uniquely solve this problem through:
+- **Adversarial Truth-Finding**: Multiple agents challenge each other's claims in real-time
+- **Distributed Cognition**: Each agent specializes in a distinct role (argue, verify, challenge, synthesize)
+- **Built-in Verification**: Fact-checking happens automatically as part of the debate structure
+- **Emergent Intelligence**: Insights arise from interaction that no single agent could produce
+
+### Core Agents
+
+| Agent | Role | Capability |
+|-------|------|------------|
+| 🎯 **Moderator** | Orchestration | Enforces debate protocol and manages flow |
+| 🔴 **Conservative** | Perspective | Traditional values, free markets, individual liberty |
+| 🔵 **Progressive** | Perspective | Social justice, collective action, systemic reform |
+| ✅ **Fact Checker** | Verification | Real-time Google Search claim verification |
+| 😈 **Devil's Advocate** | Challenge | Prevents groupthink through Socratic questioning |
+| 🧠 **Synthesizer** | Analysis | Generates nuanced conclusions and common ground |
+
+---
+
+## Architecture
+
+### System Overview
+
+```mermaid
+graph TB
+    UI[Web UI] --> Server[FastAPI Server]
+    Server --> DM[Debate Manager]
+    DM --> MOD[Moderator]
+    MOD --> CON[Conservative]
+    MOD --> PRO[Progressive]
+    CON --> MEMORY[Memory Bank]
+    PRO --> MEMORY
+    MEMORY --> FC[Fact Checker]
+    MEMORY --> DA[Devil's Advocate]
+    FC --> MEMORY
+    DA --> MEMORY
+    MEMORY --> SYNTH[Synthesizer]
+    SYNTH --> OUTPUT[Synthesis]
+    MEMORY --> FS[(Firestore)]
+    
+    style MOD fill:#FFD700
+    style FC fill:#90EE90
+    style DA fill:#FF6B6B
+    style SYNTH fill:#87CEEB
+```
+
+### Data Flow
+
+1. **Moderator** orchestrates debate phases (opening, rebuttals, cross-examination, closing)
+2. **Perspective agents** generate arguments based on their worldview
+3. **Memory Bank** stores all messages with dual-write (local + Firestore)
+4. **Fact Checker** verifies claims using Google Search grounding
+5. **Devil's Advocate** challenges assumptions to prevent groupthink
+6. **Synthesizer** analyzes full debate and extracts common ground
+
+### Key Components
+
+**Debate Manager** (`demo/debate_manager.py`)  
+- Coordinates agent turns and phases
+- WebSocket broadcasting for real-time UI
+- Metrics collection and persistence
+
+**Memory System** (`memory/memory_bank.py`)  
+- Dual-write: Local JSON + Firestore
+- Full debate context for agents
+- Persistent storage of all conversations
+
+**Observability** (`utils/metrics.py`)  
+- Tracks latency, token usage, errors
+- Samples 20% of prompts for debugging
+- Full stack trace capture
+
+---
+
+## Technology Stack
+
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **AI** | Google ADK + Gemini 2.0 Flash | Native integration, fast responses |
+| **Grounding** | Google Search | Real-time fact verification |
+| **Backend** | FastAPI + Uvicorn | Async API server |
+| **Database** | Firestore | Serverless cloud storage |
+| **Frontend** | WebSockets + Vanilla JS | Real-time updates |
+| **Deployment** | Google Cloud Run | Serverless containers |
 
 ---
 
 ## Quick Start
 
 ### Prerequisites
+- Python 3.10+
+- Google Cloud Project with Gemini API
+- `GOOGLE_API_KEY` environment variable
 
-- Python 3.11+
-- Google AI API key ([get one here](https://ai.google.dev/))
-
-### Installation
+### Installation (Automated)
 
 ```bash
-# Clone the repository
+# 1. Clone and setup
 git clone https://github.com/yourusername/ai-debate-arena.git
 cd ai-debate-arena
+./bootstrap.sh    # Installs everything automatically
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Set up environment
+# 2. Configure
 cp .env.example .env
-# Edit .env and add your GOOGLE_API_KEY
+# Add your GOOGLE_API_KEY to .env
+
+# 3. Start
+./start-server.sh
 ```
 
-### For Developers
+Access the UI at `http://localhost:8000`
 
-If you're contributing to the project, install development dependencies and set up Git hooks:
-
-```bash
-# Install development dependencies
-pip install -r requirements-dev.txt
-
-# Set up Git hooks for automatic code quality checks
-./scripts/setup-hooks.sh
-
-# (Optional) Install pre-commit framework
-pre-commit install
-```
-
-The pre-commit hook will automatically:
-- Format code with **Black** (line length: 100)
-- Sort imports with **isort**
-- Check code quality with **flake8** (PEP 8 compliance)
-- Prevent commits with violations
-
-### Run a Debate
-
-```bash
-python main.py
-```
+**📖 Detailed Setup**: See [QUICKSTART.md](QUICKSTART.md) for step-by-step instructions.
 
 ---
 
-## Architecture
+## Screenshots
 
-```
-┌─────────────────────────────────┐
-│     MODERATOR AGENT             │
-│   (Debate Orchestration)        │
-└────────────┬────────────────────┘
-             │
-    ┌────────┴────────┐
-    │                 │
-┌───▼────┐      ┌────▼─────┐
-│CONSERV-│      │PROGRESS- │
-│ATIVE   │◄────►│IVE       │
-└───┬────┘      └────┬─────┘
-    │                │
-    └────────┬───────┘
-             │
-    ┌────────▼────────┐
-    │  FACT CHECKER   │
-    │  (Google Search)│
-    └────────┬────────┘
-             │
-    ┌────────▼────────┐
-    │ DEVIL'S ADVOCATE│
-    └────────┬────────┘
-             │
-    ┌────────▼────────┐
-    │  SYNTHESIZER    │
-    └─────────────────┘
-```
+### Landing Page
+![Landing Page](docs/images/landing_page.png)
 
-### Core Agents
-
-1. **Moderator** - Manages debate flow, enforces protocol
-2. **Conservative Agent** - Traditional values, free market perspective
-3. **Progressive Agent** - Social justice, collective action perspective  
-4. **Fact Checker** - Real-time claim verification via Google Search
-5. **Devil's Advocate** - Challenges all positions, prevents groupthink
-6. **Synthesizer** - Generates nuanced conclusions, finds common ground
+### Active Debate
+![Active Debate](docs/images/active_debate.png)
 
 ---
 
-## Usage Example
+## Project Journey
 
-```python
-from agents.moderator import ModeratorAgent
-from agents.perspectives import ConservativeAgent, ProgressiveAgent
+### Design Decisions
 
-# Initialize agents
-moderator = ModeratorAgent()
-conservative = ConservativeAgent()
-progressive = ProgressiveAgent()
+**Google ADK vs LangChain**  
+✅ Native Gemini integration, built-in Google Search, better performance
 
-# Start debate
-result = moderator.start_debate(
-    topic="Should we have universal healthcare?",
-    agents=[conservative, progressive]
-)
+**Multi-Agent vs Single RAG**  
+✅ Simulates real debate, distributed cognition, verifiable vs hallucinations
 
-# View results
-print(result.synthesis.consensus_points)
-print(result.synthesis.common_ground)
-```
+**Firestore for Memory**  
+✅ Serverless, real-time WebSocket support, cloud-native
+
+### Technical Challenges Solved
+
+1. **Agent Coordination** → Moderator with formal protocol enforcement
+2. **Fact-Checking Latency** → Async verification (non-blocking)
+3. **Context Windows** → Selective history retrieval from memory
+4. **Topic Safety** → LLM validation before debate starts
+
+### Development Timeline
+- **Days 1-2**: Core architecture (agents, protocols)
+- **Day 3**: Evidence layer (fact checker, devil's advocate)
+- **Day 4**: Synthesis + Firestore memory
+- **Day 5**: Observability + Web UI
+- **Days 6-7**: Cloud deployment + documentation
 
 ---
 
 ## Features
 
-✨ **Multi-Agent Debate System**
-- Parallel agent execution
-- Sequential debate phases
-- Formal argumentation protocols
+### Core Capabilities
+- ✅ **Real-Time Fact Checking** via Google Search
+- ✅ **Adversarial Reasoning** via Devil's Advocate
+- ✅ **Common Ground Discovery** across perspectives
+- ✅ **Structured Debate Protocol** (formal phases)
+- ✅ **Topic Safety Validation** (LLM-based filtering)
+- ✅ **WebSocket Live Updates**
+- ✅ **Firestore Cloud Persistence**
+- ✅ **Metrics Dashboard** (latency, tokens, quality)
 
-🔍 **Real-Time Fact Checking**
-- Google Search integration
-- Source credibility scoring
-- Confidence-weighted verification
-
-🤝 **Common Ground Discovery**
-- Shared value identification
-- Compromise solution generation
-- Nuanced, multi-perspective conclusions
-
-📊 **Quality Metrics**
-- Logical validity checking
-- Fallacy detection
-- Argument strength scoring
+### Technical Highlights
+- Google ADK native (no LangChain abstraction)
+- Asynchronous agent execution
+- Type-safe (MyPy checked)
+- 15+ test suites (unit + integration)
+- Dockerized for cloud deployment
 
 ---
 
-## Technology Stack
+## Deployment
 
-- **LLM:** Google Gemini 2.0 Flash
-- **Framework:** Google ADK (Agent Development Kit)
-- **Backend:** FastAPI + WebSockets
-- **Deployment:** Docker + Google Cloud Run
-- **Testing:** pytest
+### Google Cloud Run
 
----
-
-## Project Structure
-
+```bash
+cd deployment
+./deploy.ps1  # Automated Cloud Build + Deploy
 ```
-ai-debate-arena/
-├── agents/              # Agent implementations
-│   ├── perspectives/    # Viewpoint agents
-│   ├── evidence/        # Fact checker, devil's advocate
-│   └── synthesis/       # Analyzer, synthesizer
-├── protocols/           # Message format, debate rules
-├── memory/              # Memory bank, caching
-├── tools/               # Google Search integration
-├── tests/               # Test suites
-├── demo/                # Demo UI and examples
-└── deployment/          # Docker, Cloud Run config
-```
+
+**Includes**: Auto-scaling, HTTPS, secrets management, zero-downtime
+
+**📚 Guide**: See [deployment/SETUP_GUIDE.md](deployment/SETUP_GUIDE.md)
 
 ---
 
 ## Testing
 
 ```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=agents --cov-report=html
-
-# Run specific tests
-pytest tests/test_perspectives.py -v
+pytest                     # Run all tests
+pytest --cov              # With coverage
+pytest tests/test_*.py    # Specific suite
 ```
 
----
-
-## Code Quality & CI/CD
-
-### Automated Code Quality Checks
-
-The project uses GitHub Actions to automatically check code quality on every push and pull request to the `main` branch.
-
-**CI/CD Pipeline includes:**
-- ✅ **PEP 8 Compliance**: Checks with `flake8`
-- ✅ **Code Formatting**: Validates with `black`
-- ✅ **Import Sorting**: Verifies with `isort`
-- ✅ **Test Coverage**: Runs `pytest` with coverage reports
-- ✅ **Coverage Threshold**: Fails if coverage drops below 80%
-
-**⚠️ Important**: The CI/CD pipeline checks **all files** in the repository, not just modified files. This ensures consistent code quality across the entire codebase.
-
-### Local Development Tools
-
-#### Pre-commit Hooks
-
-The project includes Git hooks that run automatically before each commit:
-
-```bash
-# Set up hooks (one-time setup)
-./scripts/setup-hooks.sh
-```
-
-This configures Git to:
-1. Auto-format code with **Black**
-2. Auto-sort imports with **isort**
-3. Check for PEP 8 violations with **flake8**
-4. Prevent commits with code quality issues
-
-**⚠️ Important**: Pre-commit hooks only check **modified/staged files** to keep commits fast. The CI/CD pipeline will check all files to ensure repository-wide quality.
-
-#### Manual Code Quality Checks
-
-```bash
-# Format code
-black .
-
-# Sort imports
-isort .
-
-# Check PEP 8 compliance
-flake8 .
-
-# Run type checking
-mypy .
-
-# Run all pre-commit checks manually
-pre-commit run --all-files
-```
-
-### Configuration
-
-All tools are configured in `pyproject.toml` and `.flake8`:
-- **Line length**: 100 characters
-- **Python target**: 3.10+
-- **Import style**: Black-compatible
-- **Coverage threshold**: 80%
+**📋 Details**: See [TESTING.md](TESTING.md)
 
 ---
 
-## Deployment
+## Additional Documentation
 
-### Docker
-
-```bash
-docker build -t ai-debate-arena .
-docker run -p 8080:8080 -e GOOGLE_API_KEY=your_key ai-debate-arena
-```
-
-### Google Cloud Run
-
-```bash
-gcloud run deploy ai-debate-arena \
-  --source . \
-  --set-env-vars GOOGLE_API_KEY=your_key
-```
+- **[QUICKSTART.md](QUICKSTART.md)** - 5-minute setup guide
+- **[DETAILED_DOCS.md](DETAILED_DOCS.md)** - Usage examples, project structure, API docs
+- **[deployment/SETUP_GUIDE.md](deployment/SETUP_GUIDE.md)** - Cloud deployment
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Development workflow
+- **[TESTING.md](TESTING.md)** - Test strategy
 
 ---
 
-## Contributing
-
-Contributions welcome! Areas for improvement:
-- Additional perspective agents (Libertarian, International, etc.)
-- Enhanced fact-checking sources
-- UI improvements
-- Performance optimizations
-- Multi-language support
-
----
-
-## License
-
-MIT License - see [LICENSE](LICENSE) for details
-
----
-
-## Acknowledgments
-
-Built with [Google Agent Development Kit](https://ai.google.dev/) and [Gemini](https://ai.google.dev/gemini-api).
-
----
-
-*"The best way to find truth isn't to ask one AI for the answer - it's to watch multiple AIs fight for it."*
+MIT License - See [LICENSE](LICENSE)
