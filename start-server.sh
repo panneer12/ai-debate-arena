@@ -54,32 +54,34 @@ else
     echo -e "${GREEN}✓ Virtual environment exists${NC}"
 fi
 
+# Detect the correct Python executable in venv
+if [ -f "venv/bin/python" ]; then
+    VENV_PYTHON="venv/bin/python"
+elif [ -f "venv/Scripts/python.exe" ]; then
+    VENV_PYTHON="venv/Scripts/python.exe"
+else
+    VENV_PYTHON="python"
+fi
+
 # 2. Check if venv has required packages
 echo "2️⃣  Checking installed packages..."
 if [ -d "venv" ]; then
-    # Activate venv to check packages
-    if [ -f "venv/bin/activate" ]; then
-        source venv/bin/activate
-    elif [ -f "venv/Scripts/activate" ]; then
-        source venv/Scripts/activate
-    fi
-
-    # Check for key packages
+    # Check for key packages using venv python directly
     MISSING_PACKAGES=()
 
-    if ! python -c "import google.genai" 2>/dev/null; then
+    if ! $VENV_PYTHON -c "import google.genai" 2>/dev/null; then
         MISSING_PACKAGES+=("google-genai")
     fi
 
-    if ! python -c "import fastapi" 2>/dev/null; then
+    if ! $VENV_PYTHON -c "import fastapi" 2>/dev/null; then
         MISSING_PACKAGES+=("fastapi")
     fi
 
-    if ! python -c "import pydantic" 2>/dev/null; then
+    if ! $VENV_PYTHON -c "import pydantic" 2>/dev/null; then
         MISSING_PACKAGES+=("pydantic")
     fi
 
-    if ! python -c "import dotenv" 2>/dev/null; then
+    if ! $VENV_PYTHON -c "import dotenv" 2>/dev/null; then
         MISSING_PACKAGES+=("python-dotenv")
     fi
 
@@ -126,11 +128,11 @@ fi
 
 # 5. Check Python version
 echo "5️⃣  Checking Python version..."
-if ! python -c "import sys; exit(0 if sys.version_info >= (3, 10) else 1)"; then
+if ! $VENV_PYTHON -c "import sys; exit(0 if sys.version_info >= (3, 10) else 1)"; then
     echo -e "${RED}❌ Python 3.10+ required${NC}"
     VALIDATION_FAILED=true
 else
-    PYTHON_VERSION=$(python --version | cut -d' ' -f2)
+    PYTHON_VERSION=$($VENV_PYTHON --version | cut -d' ' -f2)
     echo -e "${GREEN}✓ Python $PYTHON_VERSION${NC}"
 fi
 
@@ -168,17 +170,17 @@ if [ "$DEMO_MODE" = true ]; then
     echo ""
 
     if [ -f "demo/run_scenario_a.py" ]; then
-        python -m demo.run_scenario_a
+        $VENV_PYTHON -m demo.run_scenario_a
     else
         echo -e "${YELLOW}⚠ Demo script not found, running main.py instead${NC}"
-        python main.py
+        $VENV_PYTHON main.py
     fi
 
 elif [ "$DEBUG_MODE" = true ]; then
     echo -e "${BLUE}🐛 Starting in DEBUG mode...${NC}"
     echo ""
     export LOG_LEVEL=DEBUG
-    python main.py
+    $VENV_PYTHON main.py
 
 else
     echo -e "${BLUE}🚀 Starting AI Debate Arena...${NC}"
@@ -189,16 +191,16 @@ else
         # Try to find and run the FastAPI server
         if [ -f "server.py" ]; then
             echo "Starting FastAPI server..."
-            python -m uvicorn server:app --host 0.0.0.0 --port ${PORT:-8080} --reload
+            $VENV_PYTHON -m uvicorn server:app --host 0.0.0.0 --port ${PORT:-8080} --reload
         elif [ -f "api/main.py" ]; then
             echo "Starting FastAPI server..."
-            python -m uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8080} --reload
+            $VENV_PYTHON -m uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8080} --reload
         else
             # No server file, run CLI
-            python main.py
+            $VENV_PYTHON main.py
         fi
     else
         # Run CLI application
-        python main.py
+        $VENV_PYTHON main.py
     fi
 fi
