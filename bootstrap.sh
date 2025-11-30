@@ -41,6 +41,17 @@ echo ""
 # Use the detected Python command for the rest of the script
 alias python3=$PYTHON_CMD
 
+# Check for shell aliases that might interfere with virtual environments
+echo "🔍 Checking for shell alias conflicts..."
+PYTHON_ALIAS=$(alias python 2>/dev/null || true)
+if [ -n "$PYTHON_ALIAS" ]; then
+    echo -e "${YELLOW}⚠ Warning: Shell alias detected for 'python' command${NC}"
+    echo -e "${YELLOW}   Alias: $PYTHON_ALIAS${NC}"
+    echo -e "${YELLOW}   This may cause issues with virtual environments.${NC}"
+    echo -e "${YELLOW}   This script will work around it, but consider removing the alias from your shell config.${NC}"
+    echo ""
+fi
+
 # Check if uv is installed, if not install it
 echo "📦 Checking for uv package manager..."
 if ! command -v uv &> /dev/null; then
@@ -97,7 +108,8 @@ echo ""
 echo "📥 Installing dependencies with uv..."
 if [ -f "requirements.txt" ]; then
     echo "Installing from requirements.txt..."
-    uv pip install -r requirements.txt
+    # Use explicit venv path to avoid shell alias interference
+    uv pip install -r requirements.txt --python venv/bin/python
     echo -e "${GREEN}✓ Dependencies installed${NC}"
 else
     echo -e "${RED}❌ requirements.txt not found${NC}"
@@ -131,7 +143,8 @@ fi
 
 # Install development tools
 echo "🛠️  Installing development tools..."
-uv pip install black isort flake8 mypy pre-commit 2>/dev/null || echo -e "${YELLOW}⚠ Some dev tools may already be installed${NC}"
+# Use explicit venv path to avoid shell alias interference
+uv pip install black isort flake8 mypy pre-commit --python venv/bin/python 2>/dev/null || echo -e "${YELLOW}⚠ Some dev tools may already be installed${NC}"
 echo ""
 
 echo "============================================"
