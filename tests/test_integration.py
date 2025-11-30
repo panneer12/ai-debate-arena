@@ -2,9 +2,19 @@
 Integration tests for AI Debate Arena.
 Tests the full debate flow end-to-end.
 """
+import os
 import pytest
 import asyncio
 from demo.debate_manager import DebateManager
+
+# Check if we have a valid API key
+API_KEY_AVAILABLE = bool(os.getenv("GOOGLE_API_KEY")) and os.getenv("GOOGLE_API_KEY") != "test_key_placeholder"
+
+# Skip integration tests if no valid API key
+pytestmark = pytest.mark.skipif(
+    not API_KEY_AVAILABLE,
+    reason="Integration tests require a valid GOOGLE_API_KEY environment variable"
+)
 
 
 @pytest.mark.asyncio
