@@ -17,19 +17,29 @@ NC='\033[0m' # No Color
 
 # Check Python version
 echo "📋 Checking Python version..."
-if ! command -v python3 &> /dev/null; then
-    echo -e "${RED}❌ Python 3 is not installed. Please install Python 3.10 or higher.${NC}"
+
+# Try to find a suitable Python version (3.10+)
+PYTHON_CMD=""
+for cmd in python3.13 python3.12 python3.11 python3.10 python3; do
+    if command -v $cmd &> /dev/null; then
+        if $cmd -c "import sys; exit(0 if sys.version_info >= (3, 10) else 1)" 2>/dev/null; then
+            PYTHON_CMD=$cmd
+            break
+        fi
+    fi
+done
+
+if [ -z "$PYTHON_CMD" ]; then
+    echo -e "${RED}❌ Python 3.10+ is not found. Please install Python 3.10 or higher.${NC}"
     exit 1
 fi
 
-PYTHON_VERSION=$(python3 --version | cut -d' ' -f2)
-REQUIRED_VERSION="3.10"
-if ! python3 -c "import sys; exit(0 if sys.version_info >= (3, 10) else 1)"; then
-    echo -e "${RED}❌ Python $PYTHON_VERSION is installed, but Python 3.10+ is required.${NC}"
-    exit 1
-fi
-echo -e "${GREEN}✓ Python $PYTHON_VERSION detected${NC}"
+PYTHON_VERSION=$($PYTHON_CMD --version | cut -d' ' -f2)
+echo -e "${GREEN}✓ Python $PYTHON_VERSION detected (using $PYTHON_CMD)${NC}"
 echo ""
+
+# Use the detected Python command for the rest of the script
+alias python3=$PYTHON_CMD
 
 # Check if uv is installed, if not install it
 echo "📦 Checking for uv package manager..."
@@ -37,7 +47,7 @@ if ! command -v uv &> /dev/null; then
     echo -e "${YELLOW}⚠ uv not found. Installing uv...${NC}"
 
     # Install uv using pip
-    if ! python3 -m pip install --user uv; then
+    if ! $PYTHON_CMD -m pip install --user uv; then
         echo -e "${YELLOW}⚠ pip install failed, trying alternative method...${NC}"
         # Alternative: use curl (for Linux/Mac)
         if command -v curl &> /dev/null; then
@@ -65,7 +75,7 @@ if [ -d "venv" ]; then
     echo -e "${YELLOW}⚠ Virtual environment already exists. Skipping creation.${NC}"
 else
     echo "Creating virtual environment with uv..."
-    uv venv venv
+    uv venv venv --python $PYTHON_CMD
     echo -e "${GREEN}✓ Virtual environment created${NC}"
 fi
 echo ""
