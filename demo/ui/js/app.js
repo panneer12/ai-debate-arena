@@ -141,7 +141,16 @@ class DebateApp {
                 insights: data.synthesis?.summary || 'No insights available.'
             };
 
-            // Show modal popup (message already added by backend via WebSocket)
+            // Add synthesis message to conversation feed
+            const synthesisMessage = {
+                type: 'SYNTHESIS',
+                from_agent: 'Synthesizer',
+                content: `## Common Ground\n${synthesis.commonGround}\n\n## Key Arguments\n${synthesis.keyArguments.join(', ')}\n\n## Final Synthesis\n${synthesis.insights}`,
+                timestamp: new Date().toISOString()
+            };
+            debateManager.addMessage(synthesisMessage);
+
+            // Also show modal popup
             debateManager.showSynthesis(synthesis);
         });
 
