@@ -40,6 +40,7 @@ done
 
 # Validation checks
 VALIDATION_FAILED=false
+VENV_PYTHON="venv/bin/python"
 
 echo "🔍 Running pre-flight checks..."
 echo ""
@@ -54,19 +55,10 @@ else
     echo -e "${GREEN}✓ Virtual environment exists${NC}"
 fi
 
-# Detect the correct Python executable in venv
-if [ -f "venv/bin/python" ]; then
-    VENV_PYTHON="venv/bin/python"
-elif [ -f "venv/Scripts/python.exe" ]; then
-    VENV_PYTHON="venv/Scripts/python.exe"
-else
-    VENV_PYTHON="python"
-fi
-
 # 2. Check if venv has required packages
 echo "2️⃣  Checking installed packages..."
-if [ -d "venv" ]; then
-    # Check for key packages using venv python directly
+if [ -f "$VENV_PYTHON" ]; then
+    # Check for key packages using venv Python
     MISSING_PACKAGES=()
 
     if ! $VENV_PYTHON -c "import google.genai" 2>/dev/null; then
@@ -128,12 +120,17 @@ fi
 
 # 5. Check Python version
 echo "5️⃣  Checking Python version..."
-if ! $VENV_PYTHON -c "import sys; exit(0 if sys.version_info >= (3, 10) else 1)"; then
-    echo -e "${RED}❌ Python 3.10+ required${NC}"
-    VALIDATION_FAILED=true
+if [ -f "$VENV_PYTHON" ]; then
+    if ! $VENV_PYTHON -c "import sys; exit(0 if sys.version_info >= (3, 10) else 1)"; then
+        echo -e "${RED}❌ Python 3.10+ required${NC}"
+        VALIDATION_FAILED=true
+    else
+        PYTHON_VERSION=$($VENV_PYTHON --version | cut -d' ' -f2)
+        echo -e "${GREEN}✓ Python $PYTHON_VERSION${NC}"
+    fi
 else
-    PYTHON_VERSION=$($VENV_PYTHON --version | cut -d' ' -f2)
-    echo -e "${GREEN}✓ Python $PYTHON_VERSION${NC}"
+    echo -e "${RED}❌ Virtual environment Python not found${NC}"
+    VALIDATION_FAILED=true
 fi
 
 # 6. Check if main.py exists
