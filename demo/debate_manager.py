@@ -252,13 +252,17 @@ class DebateManager:
         # 2. Devil's Advocate (only if enabled for this turn)
         if run_devil_advocate:
             try:
-                da_res = await self.devils_advocate.challenge_argument(message.content, message.from_agent)
+                da_res = await self.devils_advocate.challenge_argument(
+                    message.content, message.from_agent
+                )
                 if da_res:
                     # Devil's Advocate returns 'question', not 'challenge'
                     da_msg = {
                         "type": "CHALLENGE",
                         "from_agent": self.devils_advocate.name,
-                        "content": da_res.get("question", da_res.get("challenge", "Challenge unavailable")),
+                        "content": da_res.get(
+                            "question", da_res.get("challenge", "Challenge unavailable")
+                        ),
                         "challenge_type": da_res.get("challenge_type", "unknown"),
                     }
                     await self.broadcast(da_msg)
