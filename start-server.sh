@@ -180,24 +180,22 @@ elif [ "$DEBUG_MODE" = true ]; then
     $VENV_PYTHON main.py
 
 else
-    echo -e "${BLUE}🚀 Starting AI Debate Arena...${NC}"
+    echo -e "${BLUE}🚀 Starting AI Debate Arena Server...${NC}"
     echo ""
 
     # Check if we should run the FastAPI server or CLI
-    if grep -q "uvicorn" requirements.txt && [ -f "server.py" ] || [ -f "api/main.py" ]; then
-        # Try to find and run the FastAPI server
-        if [ -f "server.py" ]; then
-            echo "Starting FastAPI server..."
-            $VENV_PYTHON -m uvicorn server:app --host 0.0.0.0 --port ${PORT:-8080} --reload
-        elif [ -f "api/main.py" ]; then
-            echo "Starting FastAPI server..."
-            $VENV_PYTHON -m uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8080} --reload
-        else
-            # No server file, run CLI
-            $VENV_PYTHON main.py
-        fi
+    if [ -f "demo/server.py" ]; then
+        echo "Starting FastAPI server..."
+        $VENV_PYTHON -m uvicorn demo.server:app --host ${HOST:-0.0.0.0} --port ${PORT:-8080} --reload
+    elif [ -f "server.py" ]; then
+        echo "Starting FastAPI server..."
+        $VENV_PYTHON -m uvicorn server:app --host ${HOST:-0.0.0.0} --port ${PORT:-8080} --reload
+    elif [ -f "api/main.py" ]; then
+        echo "Starting FastAPI server..."
+        $VENV_PYTHON -m uvicorn api.main:app --host ${HOST:-0.0.0.0} --port ${PORT:-8080} --reload
     else
-        # Run CLI application
+        # No server file, run CLI
+        echo -e "${YELLOW}⚠ No server.py found, running CLI mode${NC}"
         $VENV_PYTHON main.py
     fi
 fi
