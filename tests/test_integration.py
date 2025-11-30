@@ -2,13 +2,17 @@
 Integration tests for AI Debate Arena.
 Tests the full debate flow end-to-end.
 """
+
 import os
 import pytest
 import asyncio
 from demo.debate_manager import DebateManager
 
 # Check if we have a valid API key
-API_KEY_AVAILABLE = bool(os.getenv("GOOGLE_API_KEY")) and os.getenv("GOOGLE_API_KEY") not in ["test_key_for_ci", "test_key_placeholder"]
+API_KEY_AVAILABLE = bool(os.getenv("GOOGLE_API_KEY")) and os.getenv("GOOGLE_API_KEY") not in [
+    "test_key_for_ci",
+    "test_key_placeholder",
+]
 
 # Mark all tests in this module as integration tests
 # These tests are skipped in PR checks and only run on main branch or manually
@@ -16,8 +20,8 @@ pytestmark = [
     pytest.mark.integration,
     pytest.mark.skipif(
         not API_KEY_AVAILABLE,
-        reason="Integration tests require a valid GOOGLE_API_KEY environment variable"
-    )
+        reason="Integration tests require a valid GOOGLE_API_KEY environment variable",
+    ),
 ]
 
 
@@ -79,7 +83,9 @@ async def test_devils_advocate_frequency():
     await manager.initialize_agents()
 
     task = asyncio.create_task(
-        manager.start_debate(topic="Test topic", rounds=2, active_agents=["conservative", "progressive"])
+        manager.start_debate(
+            topic="Test topic", rounds=2, active_agents=["conservative", "progressive"]
+        )
     )
 
     await asyncio.sleep(45)  # 2 rounds
