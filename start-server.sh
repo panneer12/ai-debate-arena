@@ -40,7 +40,15 @@ done
 
 # Validation checks
 VALIDATION_FAILED=false
-VENV_PYTHON="venv/bin/python"
+
+# Detect the correct Python executable in venv
+if [ -f "venv/bin/python" ]; then
+    VENV_PYTHON="venv/bin/python"
+elif [ -f "venv/Scripts/python.exe" ]; then
+    VENV_PYTHON="venv/Scripts/python.exe"
+else
+    VENV_PYTHON="python"
+fi
 
 echo "🔍 Running pre-flight checks..."
 echo ""
