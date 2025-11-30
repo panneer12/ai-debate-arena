@@ -231,30 +231,36 @@ class DebateManager:
         # to ensure the UI gets updates in order.
 
         # 1. Fact Check
-        fc_res = await self.fact_checker.check_claim(message.content)
-        if fc_res["verdict"] != "TRUE":
-            fc_msg = {
-                "type": "FACT_CHECK",
-                "from_agent": self.fact_checker.name,
-                "content": fc_res["explanation"],
-                "claim": message.content[:100] + "...",
-                "verdict": fc_res["verdict"],
-            }
-            await self.broadcast(fc_msg)
-            await asyncio.sleep(0)  # Yield to event loop
+        try:
+            fc_res = await self.fact_checker.check_claim(message.content)
+            if fc_res["verdict"] != "TRUE":
+                fc_msg = {
+                    "type": "FACT_CHECK",
+                    "from_agent": self.fact_checker.name,
+                    "content": fc_res["explanation"],
+                    "claim": message.content[:100] + "...",
+                    "verdict": fc_res["verdict"],
+                }
+                await self.broadcast(fc_msg)
+                await asyncio.sleep(0)  # Yield to event loop
+        except Exception as e:
+            logger.error(f"❌ Fact Checker analysis error: {e}", exc_info=True)
 
         # 2. Devil's Advocate
-        da_res = await self.devils_advocate.challenge_argument(message.content, message.from_agent)
-        if da_res:
-            # Devil's Advocate returns 'question', not 'challenge'
-            da_msg = {
-                "type": "CHALLENGE",
-                "from_agent": self.devils_advocate.name,
-                "content": da_res.get("question", da_res.get("challenge", "Challenge unavailable")),
-                "challenge_type": da_res.get("challenge_type", "unknown"),
-            }
-            await self.broadcast(da_msg)
-            await asyncio.sleep(0)  # Yield to event loop
+        try:
+            da_res = await self.devils_advocate.challenge_argument(message.content, message.from_agent)
+            if da_res:
+                # Devil's Advocate returns 'question', not 'challenge'
+                da_msg = {
+                    "type": "CHALLENGE",
+                    "from_agent": self.devils_advocate.name,
+                    "content": da_res.get("question", da_res.get("challenge", "Challenge unavailable")),
+                    "challenge_type": da_res.get("challenge_type", "unknown"),
+                }
+                await self.broadcast(da_msg)
+                await asyncio.sleep(0)  # Yield to event loop
+        except Exception as e:
+            logger.error(f"❌ Devil's Advocate challenge error: {e}", exc_info=True)
 
     async def _run_synthesis(self, topic: str):
         """Run synthesis phase."""

@@ -207,6 +207,10 @@ class ModeratorAgent(BaseDebateAgent):
         # Use a short response
         response = await self.generate_response(context="", prompt=prompt)
 
+        if not response:
+            logger.error("validate_topic: Received None/empty response from generate_response")
+            return False, "Unable to validate topic - API error"
+
         if response.strip().upper().startswith("VALID"):
             return True, ""
         else:

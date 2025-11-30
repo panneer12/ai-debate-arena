@@ -102,6 +102,10 @@ REASONING: [Why this challenge matters - 1 sentence]"""
         Returns:
             Tuple of (challenge_type, question, reasoning)
         """
+        if not response:
+            logger.error("_parse_challenge_response: Received None/empty response")
+            return "assumption", "Challenge unavailable - API error", ""
+
         lines = response.strip().split("\n")
         challenge_type = "assumption"  # Default
         question = ""

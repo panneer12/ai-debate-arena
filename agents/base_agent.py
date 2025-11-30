@@ -83,6 +83,18 @@ class BaseDebateAgent(abc.ABC):
                         ),
                     )
                     response_text = response.text
+
+                    # Check if response is None or empty
+                    if not response_text:
+                        logger.warning(
+                            f"⚠️ {self.name} received empty response.text from API (attempt {attempt + 1}/{settings.retry_attempts})"
+                        )
+                        if attempt < settings.retry_attempts - 1:
+                            await asyncio.sleep(settings.retry_delay_seconds)
+                            continue
+                        logger.error(f"❌ {self.name} failed to get valid response after all retries")
+                        return f"[{self.name} - No response received from API]"
+
                     return response_text
 
                 except Exception as e:
