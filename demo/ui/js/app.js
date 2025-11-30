@@ -141,7 +141,16 @@ class DebateApp {
                 insights: data.synthesis?.summary || 'No insights available.'
             };
 
-            // Show modal popup (message already added by backend via WebSocket)
+            // Add synthesis message to conversation feed
+            const synthesisMessage = {
+                type: 'SYNTHESIS',
+                from_agent: 'Synthesizer',
+                content: `## Common Ground\n${synthesis.commonGround}\n\n## Key Arguments\n${synthesis.keyArguments.join(', ')}\n\n## Final Synthesis\n${synthesis.insights}`,
+                timestamp: new Date().toISOString()
+            };
+            debateManager.addMessage(synthesisMessage);
+
+            // Also show modal popup
             debateManager.showSynthesis(synthesis);
         });
 
@@ -359,8 +368,23 @@ class DebateApp {
         const topicInput = document.getElementById('topicInput');
         const roundsInput = document.getElementById('roundsInput');
 
-        if (startBtn) startBtn.disabled = debateActive;
-        if (stopBtn) stopBtn.disabled = !debateActive;
+        if (startBtn) {
+            startBtn.disabled = debateActive;
+            // Keep primary class but it will be faded when disabled
+        }
+
+        if (stopBtn) {
+            stopBtn.disabled = !debateActive;
+            // Change to danger (red) when active, secondary when inactive
+            if (debateActive) {
+                stopBtn.classList.remove('btn-secondary');
+                stopBtn.classList.add('btn-danger');
+            } else {
+                stopBtn.classList.remove('btn-danger');
+                stopBtn.classList.add('btn-secondary');
+            }
+        }
+
         if (topicInput) topicInput.disabled = debateActive;
         if (roundsInput) roundsInput.disabled = debateActive;
 

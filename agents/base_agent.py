@@ -110,7 +110,9 @@ class BaseDebateAgent(abc.ABC):
                         if attempt < settings.retry_attempts - 1:
                             await asyncio.sleep(settings.retry_delay_seconds)
                             continue
-                        logger.error(f"❌ {self.name} failed to get valid response after all retries")
+                        logger.error(
+                            f"❌ {self.name} failed to get valid response after all retries"
+                        )
                         return f"[{self.name} - No response received from API]"
 
                     return response_text
