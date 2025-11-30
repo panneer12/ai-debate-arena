@@ -267,27 +267,34 @@ class DebateManager:
                 logger.error(f"❌ Devil's Advocate challenge error: {e}", exc_info=True)
 
     async def _run_devils_advocate_round(self):
-        """Run Devil's Advocate once per round on the last 2 messages."""
+        """Run Devil's Advocate once per round on one random message."""
         history = self.memory.get_full_history()
         if len(history) < 2:
             return
 
-        # Challenge the last 2 arguments (both agents)
-        for msg in history[-2:]:
-            if msg.type in ["ARGUMENT", "REBUTTAL", "OPENING_STATEMENT"]:
-                try:
-                    da_res = await self.devils_advocate.challenge_argument(msg.content, msg.from_agent)
-                    if da_res:
-                        da_msg = {
-                            "type": "CHALLENGE",
-                            "from_agent": self.devils_advocate.name,
-                            "content": da_res.get("question", da_res.get("challenge", "Challenge unavailable")),
-                            "challenge_type": da_res.get("challenge_type", "unknown"),
-                        }
-                        await self.broadcast(da_msg)
-                        await asyncio.sleep(0)
-                except Exception as e:
-                    logger.error(f"❌ Devil's Advocate round challenge error: {e}", exc_info=True)
+        # Get the last 2 arguments (both agents from this round)
+        recent_args = [msg for msg in history[-2:] if msg.type in ["ARGUMENT", "REBUTTAL", "OPENING_STATEMENT"]]
+        
+        if not recent_args:
+            return
+
+        # Pick ONE random argument to challenge per round
+        import random
+        msg = random.choice(recent_args)
+
+        try:
+            da_res = await self.devils_advocate.challenge_argument(msg.content, msg.from_agent)
+            if da_res:
+                da_msg = {
+                    "type": "CHALLENGE",
+                    "from_agent": self.devils_advocate.name,
+                    "content": da_res.get("question", da_res.get("challenge", "Challenge unavailable")),
+                    "challenge_type": da_res.get("challenge_type", "unknown"),
+                }
+                await self.broadcast(da_msg)
+                await asyncio.sleep(0)
+        except Exception as e:
+            logger.error(f"❌ Devil's Advocate round challenge error: {e}", exc_info=True)
 
     async def _run_synthesis(self, topic: str):
         """Run synthesis phase."""

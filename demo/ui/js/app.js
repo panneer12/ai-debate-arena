@@ -141,6 +141,7 @@ class DebateApp {
                 insights: data.synthesis?.summary || 'No insights available.'
             };
 
+            // Show modal popup (message already added by backend via WebSocket)
             debateManager.showSynthesis(synthesis);
         });
 
