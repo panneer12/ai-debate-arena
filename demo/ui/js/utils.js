@@ -190,6 +190,9 @@ const Utils = {
      * @returns {string} Display name
      */
     getAgentDisplayName(agentId) {
+        if (!agentId) {
+            return 'Unknown Agent';
+        }
         const names = {
             moderator: '🎯 Moderator',
             conservative: '🔴 Conservative',
@@ -209,6 +212,9 @@ const Utils = {
      * @returns {string} CSS class name
      */
     getAgentColorClass(agentId) {
+        if (!agentId) {
+            return 'message-default';
+        }
         const classes = {
             moderator: 'message-moderator',
             conservative: 'message-conservative',
