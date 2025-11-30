@@ -121,7 +121,7 @@ graph TB
 
 ```bash
 # 1. Clone and setup
-git clone https://github.com/yourusername/ai-debate-arena.git
+git clone https://github.com/panneer12/ai-debate-arena.git
 cd ai-debate-arena
 ./bootstrap.sh    # Installs everything automatically
 
